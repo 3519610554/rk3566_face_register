@@ -28,9 +28,7 @@ public:
     NetSocket();
     ~NetSocket();
     int initialize(const char *ip, int port, int socket_type);
-    void cleanupNetwork();
-    int send_message(const char *message);
-    int receive_message(char *buffer, int buffer_size);
+    SocketType getSock();
 protected:    
     SocketType m_sock;
     sockaddr_in m_sa;

@@ -1,6 +1,4 @@
 #include "net_socket.h"
-#include <iostream>
-#include <cstring>
 
 NetSocket::NetSocket(){
 #ifdef _WIN32
@@ -33,4 +31,9 @@ int NetSocket::initialize(const char *ip, int port, int socket_type){
     }
 
     return 0;
+}
+
+SocketType NetSocket::getSock(){
+
+    return m_sock;
 }
