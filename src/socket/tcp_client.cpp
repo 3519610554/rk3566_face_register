@@ -16,8 +16,8 @@ int TcpClient::connectServer(const char *ip, int port){
 
     if (initialize(ip, port))
         return 1;
-    if (connect(m_sock, (SOCKADDR*)&m_sa, sizeof(m_sa)) == SOCKET_ERROR) {
-        WSACleanup();
+    if (connect(m_sock, (SockaddrType*)&m_sa, sizeof(m_sa)) == -1) {
+        CLOSE_SOCKET(m_sock);
         return 2;
     }
     return 0;

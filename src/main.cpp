@@ -3,6 +3,7 @@
 // #include "tcp_server.h"
 // #include "tcp_client.h"
 #include "udp.h"
+#include "tcp_client.h"
 
 int main() {
     
@@ -23,9 +24,24 @@ int main() {
     //             }
     //         }
     //     }
+    TcpClient server;
+
+    int state = server.connectServer("10.34.45.164", 8080);
+    std::cout << "state: " << state << std::endl;
+    if (!state){
+            while(1){
+                int input_data = 0;
+                std::cin >> input_data;
+                if (input_data==1){
+                    server.send_message("Hello");
+                }else if (input_data==2){
+                    break;
+                }
+            }
+        }
     // Udp client;
     // std::cout << "begin\n";
-    // int state = client.initialize("172.20.10.2", 8080);
+    // int state = client.initialize("10.34.45.164", 8080);
     // std::cout << "state: " << state << std::endl;
     // if (!state){
     //     while(1){
@@ -39,8 +55,7 @@ int main() {
     //         }
     //     }
     // }
-    // client.cleanupNetwork();
-    std::cout << "Hello World\n";
+    // std::cout << "Hello World\n";
     
     return 0;
 }
