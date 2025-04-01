@@ -11,7 +11,10 @@ set(LINK_LIBRARIES
 )
 
 #CMake 会递归进入该目录并执行其中的 CMakeLists.txt
-add_subdirectory(${SUBDIRECTORY})
+foreach(sub ${SUBDIRECTORY})
+    add_subdirectory(${sub})
+endforeach()
+
 
 # 将链接的库链接到当前可执行文件(${PROJECT_NAME})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${LINK_LIBRARIES})

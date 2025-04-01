@@ -8,6 +8,9 @@ project(MyProject VERSION 1.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/build)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+
 # 让 CMake 可以找到 cmake 目录下的 CMake 模块文件
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
@@ -31,7 +34,10 @@ foreach(library ${LIBRARIES_FILE})
 endforeach()
 
 # 添加子目录，编译源码和测试目录下的内容
-add_subdirectory(${SUBDIRECTORY})
+foreach(sub ${SUBDIRECTORY})
+    add_subdirectory(${sub})   # 导入外部 CMake 配置文件
+endforeach()
 
 # 安装目标文件到指定的二进制文件夹（bin）
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
+message(STATUS "src: ${CMAKE_BINARY_DIR}")
