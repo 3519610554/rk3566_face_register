@@ -16,6 +16,7 @@ using SocketType = SOCKET;
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <errno.h>
+#include <iostream>
 using   SocketType = int;
 #define SockaddrType        struct sockaddr
 #define INET_PTON(x1,x2,x3) inet_pton(x1,x2,x3)

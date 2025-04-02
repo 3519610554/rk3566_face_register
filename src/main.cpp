@@ -1,64 +1,33 @@
+#include <boost/asio/connect.hpp>
+#include <boost/asio/io_context.hpp>
 #include <iostream>
-#include "net_socket.h"
-// #include "tcp_server.h"
-// #include "tcp_client.h"
-#include "udp.h"
-#include "tcp_client.h"
+#include <boost/asio.hpp>
 
 #define HOST    "10.34.54.178"
-#define PORT    8080
+#define PORT    "8080"
+#define TCP_BOOST   boost::asio::ip::tcp
 
 int main() {
-    
-    // TcpClient server;
 
-    // int state = server.connectServer(HOST, PORT);
-    // std::cout << "state: " << state << std::endl;
-    // if (!state){
-    //     while(1){
-    //         int input_data = 0;
-    //         std::cin >> input_data;
-    //         if (input_data==1){
-    //             server.send_message("Hello");
-    //         }else if (input_data==2){
-    //             break;
-    //         }
-    //     }
-    // }
+    try{
+        boost::asio::io_context io_context;
+        TCP_BOOST::resolver resolver(io_context);
+        TCP_BOOST::resolver::results_type endpoints = resolver.resolve(HOST, PORT);
+        TCP_BOOST::socket socket(io_context);
 
-    TcpClient server;
+        boost::asio::connect(socket, endpoints);
 
-    int state = server.connectServer(HOST, 8080);
-    std::cout << "state: " << state << std::endl;
-    if (!state){
-        while(1){
-            int input_data = 0;
-            std::cin >> input_data;
-            if (input_data==1){
-                send(server.getSock(), "Hello", strlen("Hello"), 0);
-            }else if (input_data==2){
-                break;
-            }
-        }
+        std::string msg = "Hello from Boost.Asio Client!";
+
+        boost::asio::write(socket, boost::asio::buffer(msg));
+
+        // 读取服务器返回的数据
+        char buffer[1024] = {0};
+        size_t len = socket.read_some(boost::asio::buffer(buffer));
+        std::cout << "收到服务器消息：" << std::string(buffer, len) << std::endl;
+    } catch (std::exception& e) {
+        std::cerr << "错误: " << e.what() << std::endl;
     }
-
-    // Udp client;
-    // std::cout << "begin\n";
-    // int state = client.initialize("10.34.45.164", 8080);
-    // std::cout << "state: " << state << std::endl;
-    // if (!state){
-    //     while(1){
-    //         int input_data = 0;
-    //         std::cin >> input_data;
-    //         if (input_data==1){
-    //             int res = client.send_message("Hello");
-    //             std::cout << "res: " << res << std::endl;
-    //         }else if (input_data==2){
-    //             break;
-    //         }
-    //     }
-    // }
-    // std::cout << "Hello World\n";
     
     return 0;
 }

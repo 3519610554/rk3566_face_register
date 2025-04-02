@@ -18,29 +18,14 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 # 让 CMake 可以找到 cmake 目录下的 CMake 模块文件
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
-# 定义需要包含的外部 CMake 文件列表
-set(LIBRARIES_FILE 
-    CommonSettings      # 载入通用设置
-    ExternalLibraries   # 载入外部库
-    Threads             # 支持多线程
-    Pipeline            # 集成 CI/CD 设置
-)
+include(CommonSettings)
+include(ExternalLibraries)
+include(Threads)
+include(Pipeline)
 
-# 定义需要添加的子目录
-set(SUBDIRECTORY
-    src         # 源代码目录
-    tests       # 测试代码目录
-)
-
-# 循环遍历外部 CMake 文件列表，并逐个包含它们
-foreach(library ${LIBRARIES_FILE})
-    include(${library})   # 导入外部 CMake 配置文件
-endforeach()
-
-# 添加子目录，编译源码和测试目录下的内容
-foreach(sub ${SUBDIRECTORY})
-    add_subdirectory(${sub})   # 导入外部 CMake 配置文件
-endforeach()
+add_subdirectory(src) 
+add_subdirectory(tests) 
+add_subdirectory(external) 
 
 # 安装目标文件到指定的二进制文件夹（bin）
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
