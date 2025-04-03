@@ -1,14 +1,9 @@
 #include "tcp_server.h"
 #include <iostream>
 
-int TcpServer::initialize(const char *ip, int port){
-
-    return NetSocket::initialize(ip, port, SOCK_STREAM);
-}
-
 int TcpServer::initAcceptClient(const char *ip, int port){
 
-    if (initialize(ip, port))
+    if (NetSocket::initialize(ip, port, SOCK_STREAM))
         return 1;
 
     // 绑定地址和端口
@@ -30,18 +25,17 @@ int TcpServer::initAcceptClient(const char *ip, int port){
 
 int TcpServer::acceptClientConnection(){
 
-    m_sock = accept(m_sock, NULL, NULL);
+    int client_sock = accept(m_sock, NULL, NULL);
 #ifdef _WIN32
-    if (m_sock == INVALID_SOCKET)
+    if (client_sock == INVALID_SOCKET)
 #else
-    if (m_sock < 0)
+    if (client_sock < 0)
 #endif
     {
         perror("accept failed!");
         exit(EXIT_FAILURE);
     }
-    // std::cout << "Client connected" << std::endl;
-
-    return m_sock;
+    std::cout << client_sock << std::endl;
+    return client_sock;
 }
 

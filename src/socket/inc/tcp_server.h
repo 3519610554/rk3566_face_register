@@ -5,11 +5,9 @@
 
 class TcpServer : public NetSocket{
 public:
-    int initialize(const char *ip, int port);
     int initAcceptClient(const char *ip, int port);
     int acceptClientConnection();
 private:
-
 };
 
 #endif

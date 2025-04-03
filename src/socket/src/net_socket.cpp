@@ -23,6 +23,7 @@ int NetSocket::initialize(const char *ip, int port, int socket_type){
     }
 
     m_sa.sin_family = AF_INET;
+    m_sa.sin_addr.s_addr = INADDR_ANY;
     m_sa.sin_port = htons(port);
     if (!INET_PTON(AF_INET, ip, &(m_sa.sin_addr))){
         perror("connection failed");
