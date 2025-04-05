@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        body {
+            position:relative;
+        }
+        .convery {
+            position:relative;
+            margin:auto;
+            width:200px;
+            height:200px;
+            border:2px solid #000000;
+            margin-top:100px;
+        }
+        .file {
+            position:absolute;
+            width:30px;
+            height:20px;
+            margin-top:30px;
+            margin-left:50px;
+        }
+        .submit {
+            position:absolute;
+            width:35px;
+            height:25px;
+            margin-left:50px;
+            margin-top:70px;
+        }
+         .end {
+            position:absolute;
+            width:200px;
+            height:90px;
+            margin-left:900px;
+            margin-top:-25px;
+        }
+        h3 {
+            margin-top:20px;
+            margin-left:50px;
+        }
+        .flash {
+            color:red;
+            font-size:30px;
+            margin:auto;
+            margin-left:650px;
+        }
+    </style>
+</head>
+<body>
+    <div class="flash">
+         {% with messages=get_flashed_messages()%}
+            {% if messages %}
+                {% for message in messages %}
+                    <div><p style="color:red">{{message}}</p></div>
+                {% endfor %}
+            {% endif%}
+        {% endwith %}
+    </div>
+    <form class="convery" action="http://127.0.0.1:5000/sendFiles" method="POST" enctype="multipart/form-data">
+        {{formfiles.csrf_token()}}
+
+        <h3>文件传输</h3>
+        <label class="file">
+            {{formfiles.filename}}
+        </label>
+        <label class="submit">
+            {{formfiles.submit}}
+        </label>
+<!--        <label class="end">-->
+<!--            {{formfiles.end}}-->
+<!--        </label>-->
+<!--        <button name="结束" value="Gameover"></button>-->
+    </form >
+
+</body>
+</html>
