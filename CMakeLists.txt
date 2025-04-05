@@ -15,17 +15,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/build)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-# 让 CMake 可以找到 cmake 目录下的 CMake 模块文件
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
-
-include(CommonSettings)
-include(ExternalLibraries)
-include(Threads)
-include(Pipeline)
-
 add_subdirectory(src) 
-add_subdirectory(tests) 
-add_subdirectory(external) 
 
 # 安装目标文件到指定的二进制文件夹（bin）
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)

@@ -1,10 +1,8 @@
 #include <iostream>
-#include "server.h"
  
 int main() {
 
-    WebServer web_tcp;
-    web_tcp.run();
+    std::cout << "Hello World" << std::endl;
 
     return 0;
 }
