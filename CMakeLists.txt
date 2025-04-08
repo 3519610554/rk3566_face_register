@@ -1,22 +1,57 @@
-# 设置 CMake 的最低版本要求
 cmake_minimum_required(VERSION 3.16)
 
-# 定义项目名称及其版本信息
-project(MyProject VERSION 1.0 LANGUAGES CXX)
+project(${FRAMEWORK_NAME})
 
-# 设置 C++ 的标准版本为 C++17，并强制要求使用该标准
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+message(STATUS "FRAMEWORK_NAME: ${FRAMEWORK_NAME}")
 
-#生成 compile_commands.json 文件，主要用于代码分析和智能补全
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
+set(CMAKE_VERBOSE_MAKEFILE on)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -frtti -fexceptions -fpermissive")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++")
 
-set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/build)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set(CMAKE_SKIP_RPATH FALSE)
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+set(CMAKE_SKIP_INSTALL_RPATH FALSE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 
-add_subdirectory(src) 
+# add_definitions(-fPIC)
+add_definitions(-Ofast)
+add_definitions(-ffast-math)
+add_definitions(-funsafe-math-optimizations)
+add_definitions(-D_GLIBCXX_PARALLEL)
+add_definitions(-g)
 
-# 安装目标文件到指定的二进制文件夹（bin）
-install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
-message(STATUS "src: ${CMAKE_BINARY_DIR}")
+message(STATUS "CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
+message(STATUS "CMAKE_SYSTEM_PROCESSOR: ${CMAKE_SYSTEM_PROCESSOR}")
+
+# target
+include_directories(${CMAKE_INSTALL_PREFIX}/include)
+link_directories(${CMAKE_INSTALL_PREFIX}/lib)
+SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+
+# opencv
+include_directories(${CMAKE_INSTALL_PREFIX}/include/opencv4)
+
+# openmp
+find_package(OpenMP REQUIRED)
+if(OpenMP_CXX_FOUND OR OPENMP_FOUND)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    add_definitions(-fopenmp)
+endif()
+
+message(STATUS ${CMAKE_CURRENT_SOURCE_DIR})
+
+if(COMMAND cmake_policy)
+    cmake_policy(SET CMP0003 NEW)
+endif(COMMAND cmake_policy)
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/app)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/app) 
+
+
+INSTALL(TARGETS ${FRAMEWORK_NAME} DESTINATION bin)
