@@ -14,6 +14,7 @@ protected:
     void run();
 private:
     std::thread m_thread;
+    bool m_input_name_flag;
 };
 
 #endif

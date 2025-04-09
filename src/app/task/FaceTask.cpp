@@ -7,6 +7,7 @@ FaceTask::FaceTask(){
 
     CameraUvc::Instance();
     FaceDetection::Instance();
+    m_input_name_flag = false;
 }
 
 FaceTask::~FaceTask(){
@@ -40,11 +41,19 @@ void FaceTask::run(){
         cv::waitKey(1);
 
         int ch = util::InputCheck::get_char_non_blocking();
-        if (ch == 'q') {
-            std::cout << "already exists" << std::endl;
-            break;
-        }else if (ch == 'd'){
-            FaceDetection::Instance()->enroll_face();
+        if (ch == -1)
+            continue;
+        if (m_input_name_flag){
+            m_input_name_flag = false;
+            FaceDetection::Instance()->enroll_face(std::string(1, ch));
+        }else {
+            if (ch == 'q') {
+                std::cout << "already exists" << std::endl;
+                break;
+            }else if (ch == 'd'){
+                m_input_name_flag = true;
+                
+            }
         }
     }
     m_thread.detach();

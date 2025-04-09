@@ -1,6 +1,7 @@
 #include "FaceDetection.h"
 #include "File.h"
 #include "TrainModel.h"
+#include "UserSQLite.h"
 
 #define FACE_DEFAULT_MODEL  util::File::get_currentWorking_directory() + "/model/haarcascade_frontalface_default.xml"
 
@@ -12,6 +13,7 @@ FaceDetection::FaceDetection(){
     }
     m_detection_state = false;
     m_count = 0;
+    m_user_num = UserSQLite::Instance()->get_row_count();
     TrainModel::Instance();
 }
 
@@ -24,7 +26,7 @@ void FaceDetection::enroll_face_task(cv::Mat &frame, cv::Mat face, cv::Rect face
 
     TrainModel::Instance()->train_size(face);
     m_face_images.push_back(face);
-    m_face_labels.push_back(1);
+    m_face_labels.push_back(m_user_num);
     m_count++;
 
     // 显示采集状态
@@ -36,7 +38,9 @@ void FaceDetection::enroll_face_task(cv::Mat &frame, cv::Mat face, cv::Rect face
     if (m_count >= 50) {
         m_count = 0;
         m_detection_state = false;
+        std::cout << "The " << m_user_num << " facial image capture has been completed." << std::endl;
         TrainModel::Instance()->train_data_add(m_face_images, m_face_labels);
+        UserSQLite::Instance()->insert_data(m_user_num, m_user_name);
         m_face_images.clear();
         m_face_labels.clear();
     }
@@ -53,7 +57,7 @@ void FaceDetection::detection_face_task(cv::Mat &frame, cv::Mat face, cv::Rect f
         scalar = cv::Scalar(0, 255, 0);
         std::ostringstream ss;
         ss << std::fixed << std::setprecision(2) << confidence;
-        std::string label_text = "P:" + std::to_string(predicted_label) + " C:" + ss.str();
+        std::string label_text = "name:" + UserSQLite::Instance()->get_name_by_id(predicted_label) + " C:" + ss.str();
         cv::putText(frame, label_text, cv::Point(face_rect.x, face_rect.y - 10),
             cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 0, 0), 2);
     }else {
@@ -78,9 +82,11 @@ void FaceDetection::detection_task(cv::Mat &frame, cv::Mat gray){
     }  
 }
 
-void FaceDetection::enroll_face(){
+void FaceDetection::enroll_face(std::string name){
 
     m_detection_state = true;
+    m_user_name = name;
+    m_user_num ++;
 }
 
 FaceDetection* FaceDetection::Instance(){

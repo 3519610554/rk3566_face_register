@@ -24,6 +24,7 @@ set (EXTRA_LIBS
     opencv_objdetect 
     opencv_face
     stdc++ dl
+    -lsqlite3
 )
 
 target_link_libraries(${FRAMEWORK_NAME}

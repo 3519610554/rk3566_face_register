@@ -45,3 +45,12 @@ opencv:
 	make -j2 && make install && cd -
 	touch ${BUILD_DIR}/opencv/.build_ok
 
+sqlite:
+	@[ ! -d ${BUILD_DIR}/sqlite ] && wget https://sqlite.org/2025/sqlite-autoconf-3490100.tar.gz -P ${BUILD_DIR} || echo "sqlite source ready..."
+	
+	cd ${BUILD_DIR} && \
+	tar -xzvf sqlite-autoconf-3490100.tar.gz && \
+	rm -rf sqlite-autoconf-3490100.tar.gz && \
+	mv sqlite-autoconf-3490100 sqlite && \
+	cd sqlite && ./configure --prefix=${INSTALL_DIR} && \
+	make -j4 && sudo make install && cd -

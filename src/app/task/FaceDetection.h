@@ -10,7 +10,7 @@ public:
     //人脸检测任务
     void detection_task(cv::Mat &frame, cv::Mat gray);
     //人脸录入
-    void enroll_face();
+    void enroll_face(std::string name);
     //实例化
     static FaceDetection* Instance();
 private:
@@ -24,6 +24,8 @@ private:
     
     bool m_detection_state;
     int m_count;
+    int m_user_num;
+    std::string m_user_name;
 };
 
 #endif
