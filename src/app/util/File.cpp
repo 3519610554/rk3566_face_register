@@ -40,3 +40,13 @@ FILE *util::File::create_file(const char *file, const char *mode){
     }
     return ret;
 }
+
+bool util::File::file_exist(const char *path){
+
+    auto fp = fopen(path, "rb");
+    if (!fp) {
+        return false;
+    }
+    fclose(fp);
+    return true;
+}

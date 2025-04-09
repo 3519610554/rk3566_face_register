@@ -11,6 +11,9 @@ public:
 
     //新建文件，目录文件夹自动生成
     static FILE *create_file(const char *file, const char *mode);
+
+    //判断文件是否存在
+    static bool file_exist(const char *path);
 };
 }
 

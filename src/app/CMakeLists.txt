@@ -14,7 +14,15 @@ add_executable(${FRAMEWORK_NAME}
 )
 
 set (EXTRA_LIBS 
-    opencv_highgui opencv_imgproc opencv_imgcodecs opencv_core opencv_video opencv_videoio opencv_dnn opencv_objdetect opencv_face
+    opencv_highgui 
+    opencv_imgproc 
+    # opencv_imgcodecs 
+    opencv_core 
+    # opencv_video 
+    opencv_videoio 
+    # opencv_dnn 
+    opencv_objdetect 
+    opencv_face
     stdc++ dl
 )
 
