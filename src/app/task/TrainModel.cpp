@@ -1,0 +1,100 @@
+#include "TrainModel.h"
+#include "File.h"
+#include <thread>
+#include <utility>
+
+#define FACE_MODEL_PATH         util::File::get_currentWorking_directory()+"/model/faces/"
+#define FACE_MODEL_YML          (FACE_MODEL_PATH+"face_gather.yml").c_str()
+#define FACE_MODEL              (FACE_MODEL_PATH+"face_model.xml").c_str()
+
+#define TARIN_WIDTH                 100
+#define TARIN_HEIGHT                100
+
+#define FS_FACES_WRITE(x, data)     x << "faces" << data
+#define FS_LABELS_WRITE(x, data)    x << "labels" << data
+
+#define FS_FACES_READ(x, data)      x["faces"] >> data
+#define FS_LABELS_READ(x, data)     x["labels"] >> data
+
+TrainModel::TrainModel(){
+    
+    util::File::create_file((FACE_MODEL_PATH).c_str(), nullptr);
+    m_model = cv::face::EigenFaceRecognizer::create();
+    if (util::File::file_exist(FACE_MODEL)){
+        m_model->read(FACE_MODEL);
+        m_model_state.store(true);
+    }else {
+        m_model_state.store(false);
+    }
+    m_thread = std::thread(&TrainModel::train_model, this);
+}
+
+TrainModel::~TrainModel(){
+
+    m_thread.detach();
+}
+
+void TrainModel::train_model(){
+
+    while(true){
+        if (m_queue.empty()){
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            continue;
+        }
+        std::vector<cv::Mat> face_images;
+        std::vector<int> face_labels;
+        std::pair<std::vector<cv::Mat>, std::vector<int>> data = m_queue.front();
+        m_queue.pop();
+        if (util::File::file_exist(FACE_MODEL_YML)){
+            m_fs.open(FACE_MODEL_YML, cv::FileStorage::READ);
+            FS_FACES_READ(m_fs, face_images);
+            FS_LABELS_READ(m_fs, face_labels);        
+            face_images.insert(face_images.end(), data.first.begin(), data.first.end());
+            face_labels.insert(face_labels.end(), data.second.begin(), data.second.end());
+            m_fs.release();
+        }else {
+            face_images.assign(data.first.begin(), data.first.end());
+            face_labels.assign(data.second.begin(), data.second.end());
+        }
+        cv::Ptr<cv::face::EigenFaceRecognizer> train_model = cv::face::EigenFaceRecognizer::create();
+        train_model->train(face_images, face_labels);
+        train_model->save(FACE_MODEL);
+        m_model_state.store(false);
+        m_model = train_model;
+        m_model_state.store(true);
+        std::cout << "train successfuly!" << std::endl;
+
+        m_fs.open(FACE_MODEL_YML, cv::FileStorage::WRITE);
+        FS_FACES_WRITE(m_fs, face_images);
+        FS_LABELS_WRITE(m_fs, face_labels);
+        m_fs.release();
+    }
+}
+
+void TrainModel::train_size(cv::Mat &image){
+
+    cv::resize(image, image, cv::Size(TARIN_WIDTH, TARIN_HEIGHT));
+}
+
+bool TrainModel::train_model_get(cv::Mat face, int &label, double &confidence){
+
+    if (m_model_state.load()){
+        train_size(face);
+        m_model->predict(face, label, confidence); 
+        confidence /= 10000.0f;
+        return true;
+    }
+    return false;
+}
+
+void TrainModel::train_data_add(std::vector<cv::Mat> face, std::vector<int> label){
+
+    m_queue.push(std::make_pair(face, label));
+}
+
+TrainModel* TrainModel::Instance(){
+
+    static TrainModel train_model;
+
+    return &train_model;
+}

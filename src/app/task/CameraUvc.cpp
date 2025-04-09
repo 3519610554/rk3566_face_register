@@ -3,24 +3,8 @@
 #include <iomanip>
 #include <cstdlib>
 
-#include "InputCheck.h"
-#include "File.h"
-
-#define FACE_MODEL_PATH         util::File::get_currentWorking_directory()+"/model/faces/"
-#define FACE_MODEL_YML          (FACE_MODEL_PATH+"face_gather.yml").c_str()
-#define FACE_MODEL              (FACE_MODEL_PATH+"face_model.xml").c_str()
-
 #define CAP_WIDTH                   320
 #define CAP_HEIGHT                  240
-
-#define TARIN_WIDTH                 100
-#define TARIN_HEIGHT                100
-
-#define FS_FACES_WRITE(x, data)     x << "faces" << data
-#define FS_LABELS_WRITE(x, data)    x << "labels" << data
-
-#define FS_FACES_READ(x, data)      x["faces"] >> data
-#define FS_LABELS_READ(x, data)     x["labels"] >> data
 
 CameraUvc::CameraUvc(std::string camera_id){
 
@@ -33,22 +17,6 @@ CameraUvc::CameraUvc(std::string camera_id){
     setenv("DISPLAY", ":10.0", 1);
 
     std::cout << "fps: " << m_cap.get(cv::CAP_PROP_FPS) << std::endl;
-    std::string current_path = util::File::get_currentWorking_directory() + "/model/haarcascade_frontalface_default.xml";
-    if (!m_face_cascade.load(current_path)) {
-        std::cerr << "failed to load the face detection model!" << std::endl;
-        return;
-    }
-
-    util::File::create_file((FACE_MODEL_PATH).c_str(), nullptr);
-    m_model = cv::face::EigenFaceRecognizer::create();
-    if (util::File::file_exist(FACE_MODEL)){
-        m_model->read(FACE_MODEL);
-        m_model_state = true;
-    }else {
-        m_model_state = false;
-    }
-    m_detection_state = false;
-    m_count = 0;
 }
 
 CameraUvc::~CameraUvc(){
@@ -57,143 +25,20 @@ CameraUvc::~CameraUvc(){
     cv::destroyAllWindows();
 }
 
-void CameraUvc::start(){
+bool CameraUvc::frame_get(cv::Mat &frame){
 
-    m_ready.store(false);
-    m_thread = std::thread(&CameraUvc::run, this);
-    m_train_thread = std::thread(&CameraUvc::train_model, this);
-}  
-
-void CameraUvc::wait(){
-    m_thread.join();
+    m_cap >> frame; 
+    if (frame.empty()) {
+        std::cerr << "读取帧失败" << std::endl;
+        return false;
+    }
+    cv::flip(frame, frame, 1);
+    return true;
 }
 
-void CameraUvc::enroll_face(cv::Mat &frame, cv::Mat face, cv::Rect face_rect){
+CameraUvc* CameraUvc::Instance(){
 
-    // 显示矩形框
-    cv::rectangle(frame, face_rect, cv::Scalar(0, 255, 0), 2);
+    static CameraUvc camera;
 
-    cv::resize(face, face, cv::Size(TARIN_WIDTH, TARIN_HEIGHT));
-    m_face_images.push_back(face);
-    m_face_labels.push_back(1);
-    m_count++;
-
-    // 显示采集状态
-    std::string label_text = "gather:" + std::to_string((int)((m_count*100)/50.0f)) + "%";
-    putText(frame, label_text, cv::Point(25, 25), cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 0, 0), 2);
-
-    // 如果已经采集了50张图像，停止采集
-    if (m_count >= 50) {
-        m_count = 0;
-        m_detection_state = false;
-        std::lock_guard<std::mutex> lock(m_mutex);
-        m_ready.store(true);
-        m_cv.notify_one();
-    }
-}
-
-void CameraUvc::train_model(){
-
-    while(1){
-        std::unique_lock<std::mutex> lock(m_mutex);
-        m_cv.wait(lock, [this]{return m_ready.load();});
-        std::vector<cv::Mat> face_images;
-        std::vector<int> face_labels;
-        if (util::File::file_exist(FACE_MODEL_YML)){
-            m_fs.open(FACE_MODEL_YML, cv::FileStorage::READ);
-            FS_FACES_READ(m_fs, face_images);
-            FS_LABELS_READ(m_fs, face_labels);        
-            face_images.insert(face_images.end(), m_face_images.begin(), face_images.end());
-            face_labels.insert(face_labels.end(), m_face_labels.begin(), m_face_labels.end());
-            m_fs.release();
-        }else {
-            face_images.assign(m_face_images.begin(), m_face_images.end());
-            face_labels.assign(m_face_labels.begin(), m_face_labels.end());
-        }
-        
-        m_model->train(face_images, face_labels);
-        m_model->save(FACE_MODEL);
-        std::cout << "train accomplish!" << std::endl;
-        m_model_state = true;
-
-        m_fs.open(FACE_MODEL_YML, cv::FileStorage::APPEND);
-        FS_FACES_WRITE(m_fs, face_images);
-        FS_LABELS_WRITE(m_fs, face_labels);
-        m_fs.release();
-        m_face_images.clear();
-        m_face_labels.clear();
-        m_ready.store(false);
-    }
-}
-
-void CameraUvc::detection_face(cv::Mat &frame, cv::Mat face, cv::Rect face_rect){
-
-    if (!m_model_state){
-        cv::rectangle(frame, face_rect, cv::Scalar(0, 255, 255), 2);
-        return;
-    }
-
-    // 进行人脸识别
-    int predicted_label = -1;
-    double confidence = 0.0;
-    cv::resize(face, face, cv::Size(TARIN_WIDTH, TARIN_HEIGHT));
-    m_model->predict(face, predicted_label, confidence); 
-    confidence = confidence / 10000.0f;
-    cv::Scalar scalar;
-    if (predicted_label != -1 && confidence < 0.6){
-        scalar = cv::Scalar(0, 255, 0);
-        
-        std::ostringstream ss;
-        ss << std::fixed << std::setprecision(2) << confidence;
-        std::string label_text = "P:" + std::to_string(predicted_label) + " C:" + ss.str();
-        cv::putText(frame, label_text, cv::Point(face_rect.x, face_rect.y - 10),
-            cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 0, 0), 2);
-    }else {
-        scalar = cv::Scalar(0, 255, 255);  // 黄色
-    }
-
-    cv::rectangle(frame, face_rect, scalar, 2);
-}
-
-void CameraUvc::run() {
-    
-    while (1) {
-        cv::Mat frame;
-        m_cap >> frame;
-        if (frame.empty()) {
-            std::cerr << "读取帧失败" << std::endl;
-            break;
-        }
-        cv::flip(frame, frame, 1);
-            
-        cv::Mat gray;
-        cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
-
-        // 检测人脸
-        std::vector<cv::Rect> faces;
-        m_face_cascade.detectMultiScale(gray, faces, 1.2, 5, 0, cv::Size(25, 25));
-
-        for (size_t i = 0; i < faces.size(); i++) {
-            cv::Mat face = gray(faces[i]);
-            if (m_detection_state){
-                enroll_face(frame, face, faces[i]);
-            }else {
-                detection_face(frame, face, faces[i]);
-            }
-            
-        }
-        cv::imshow("USB Camera", frame);
-        cv::waitKey(1);
-
-        int ch = util::InputCheck::get_char_non_blocking();
-        if (ch == 'q') {
-            std::cout << "already exists" << std::endl;
-            break;
-        }else if (ch == 'd'){
-            m_detection_state = true;
-        }
-    }
-    m_thread.detach();
-    m_train_thread.detach();
-    exit(0);
+    return &camera;
 }

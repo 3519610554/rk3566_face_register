@@ -1,11 +1,10 @@
 #include <iostream>
-#include "CameraUvc.h"
+#include "FaceTask.h"
  
 int main() {
-
-    CameraUvc uvc;
-    uvc.start();
-    uvc.wait();
+    
+    FaceTask::Instance()->start();
+    FaceTask::Instance()->wait();
 
     return 0;
 }
