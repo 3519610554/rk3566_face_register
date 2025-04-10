@@ -53,7 +53,8 @@ void FaceDetection::detection_face_task(cv::Mat &frame, cv::Mat face, cv::Rect f
     double confidence = 0.0;
     cv::Scalar scalar;
     bool state = TrainModel::Instance()->train_model_get(face, predicted_label, confidence);
-    if (state && (predicted_label != -1) && (confidence < 0.6)){
+    // if (state && (predicted_label != -1) && (confidence < 0.6)){
+    if (state && (predicted_label != -1) && (confidence < CONFIDENCE_THRESHOLD)){
         scalar = cv::Scalar(0, 255, 0);
         std::ostringstream ss;
         ss << std::fixed << std::setprecision(2) << confidence;

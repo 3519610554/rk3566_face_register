@@ -7,6 +7,9 @@
 #include <vector>
 #include "OpencvPublic.h"
 
+#define MPDEL_TRAIN_METHODS     cv::face::LBPHFaceRecognizer
+#define CONFIDENCE_THRESHOLD    100
+
 class TrainModel{
 public:
     TrainModel();
@@ -23,7 +26,8 @@ public:
     static TrainModel* Instance();
 private:
     cv::FileStorage m_fs;
-    cv::Ptr<cv::face::EigenFaceRecognizer> m_model;
+    // cv::Ptr<cv::face::EigenFaceRecognizer> m_model;
+    cv::Ptr<MPDEL_TRAIN_METHODS> m_model;
     std::thread m_thread;
     std::atomic<bool> m_model_state;
     std::queue<std::pair<std::vector<cv::Mat>, std::vector<int>>> m_queue; 

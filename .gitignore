@@ -1,4 +1,4 @@
 build/
 .cache/
 target/
-model/face/
+model/faces/

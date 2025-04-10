@@ -14,9 +14,9 @@ public:
     //实例化
     static FaceDetection* Instance();
 private:
-    //录入人脸
+    //录入人脸任务
     void enroll_face_task(cv::Mat &frame, cv::Mat face, cv::Rect face_rect);
-    //人脸检测
+    //人脸检测任务
     void detection_face_task(cv::Mat &frame, cv::Mat face, cv::Rect face_rect);
     cv::CascadeClassifier m_face_cascade;
     std::vector<cv::Mat> m_face_images;

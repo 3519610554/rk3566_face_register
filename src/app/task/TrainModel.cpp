@@ -19,7 +19,7 @@
 TrainModel::TrainModel(){
     
     util::File::create_file((FACE_MODEL_PATH).c_str(), nullptr);
-    m_model = cv::face::EigenFaceRecognizer::create();
+    m_model = MPDEL_TRAIN_METHODS::create();
     if (util::File::file_exist(FACE_MODEL)){
         m_model->read(FACE_MODEL);
         m_model_state.store(true);
@@ -56,7 +56,7 @@ void TrainModel::train_model(){
             face_images.assign(data.first.begin(), data.first.end());
             face_labels.assign(data.second.begin(), data.second.end());
         }
-        cv::Ptr<cv::face::EigenFaceRecognizer> train_model = cv::face::EigenFaceRecognizer::create();
+        cv::Ptr<MPDEL_TRAIN_METHODS> train_model = MPDEL_TRAIN_METHODS::create();
         train_model->train(face_images, face_labels);
         train_model->save(FACE_MODEL);
         m_model_state.store(false);
@@ -81,7 +81,7 @@ bool TrainModel::train_model_get(cv::Mat face, int &label, double &confidence){
     if (m_model_state.load()){
         train_size(face);
         m_model->predict(face, label, confidence); 
-        confidence /= 10000.0f;
+        // confidence /= 10000.0f;
         return true;
     }
     return false;
