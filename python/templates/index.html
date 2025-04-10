@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Flask OpenCV Image Display</title>
+</head>
+<body>
+    <h1>Received Image from OpenCV</h1>
+    <img id="image" src="" alt="No Image" width="500" />
+    <p id="status"></p>
+
+    <script>
+        function loadImage() {
+            const imgElement = document.getElementById("image");
+            const statusText = document.getElementById("status");
+
+            // 生成唯一时间戳，防止缓存
+            const url = "/get_image?" + new Date().getTime();
+
+            // 创建一个临时 Image 对象，用于加载和检测状态
+            const tempImg = new Image();
+            tempImg.onload = function () {
+                imgElement.src = url;
+                statusText.innerText = "图像已更新";
+            };
+            tempImg.onerror = function () {
+                statusText.innerText = "暂无图像...";
+            };
+            tempImg.src = url;
+        }
+
+        // 每隔 2 秒刷新一次图像
+        setInterval(loadImage, 2);
+    </script>
+</body>
+</html>

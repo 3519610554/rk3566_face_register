@@ -16,7 +16,7 @@ add_executable(${FRAMEWORK_NAME}
 set (EXTRA_LIBS 
     opencv_highgui 
     opencv_imgproc 
-    # opencv_imgcodecs 
+    opencv_imgcodecs 
     opencv_core 
     # opencv_video 
     opencv_videoio 
@@ -25,6 +25,7 @@ set (EXTRA_LIBS
     opencv_face
     stdc++ dl
     -lsqlite3
+    -lcurl
 )
 
 target_link_libraries(${FRAMEWORK_NAME}

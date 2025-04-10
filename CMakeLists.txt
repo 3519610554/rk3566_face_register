@@ -27,21 +27,24 @@ add_definitions(-g)
 message(STATUS "CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
 message(STATUS "CMAKE_SYSTEM_PROCESSOR: ${CMAKE_SYSTEM_PROCESSOR}")
 
-# target
+#target
 include_directories(${CMAKE_INSTALL_PREFIX}/include)
 link_directories(${CMAKE_INSTALL_PREFIX}/lib)
 SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 
-# opencv
+#opencv
 include_directories(${CMAKE_INSTALL_PREFIX}/include/opencv4)
 
-# openmp
+#openmp
 find_package(OpenMP REQUIRED)
 if(OpenMP_CXX_FOUND OR OPENMP_FOUND)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
     add_definitions(-fopenmp)
 endif()
+
+#curl
+include_directories(${CMAKE_INSTALL_PREFIX}/include/curl)
 
 message(STATUS ${CMAKE_CURRENT_SOURCE_DIR})
 

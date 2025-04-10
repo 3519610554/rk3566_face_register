@@ -2,6 +2,7 @@
 #include "InputCheck.h"
 #include "CameraUvc.h"
 #include "FaceDetection.h"
+#include "Web.h"
 
 FaceTask::FaceTask(){
 
@@ -37,8 +38,9 @@ void FaceTask::run(){
 
         FaceDetection::Instance()->detection_task(frame, gray);
 
-        cv::imshow("USB Camera", frame);
-        cv::waitKey(1);
+        // cv::imshow("USB Camera", frame);
+        util::Web::send_image_to_flask(frame);
+        // cv::waitKey(1);
 
         int ch = util::InputCheck::get_char_non_blocking();
         if (ch == -1)

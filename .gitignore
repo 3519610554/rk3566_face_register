@@ -2,3 +2,5 @@ build/
 .cache/
 target/
 model/faces/
+python/venv/
+sql/

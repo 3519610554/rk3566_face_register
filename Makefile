@@ -54,3 +54,12 @@ sqlite:
 	mv sqlite-autoconf-3490100 sqlite && \
 	cd sqlite && ./configure --prefix=${INSTALL_DIR} && \
 	make -j4 && sudo make install && cd -
+
+libcurl:
+	@[ ! -d ${BUILD_DIR}/libcurl ] && git clone https://github.com/curl/curl.git --depth=1 ${BUILD_DIR}/libcurl || echo "libcurl source ready..."
+	@[ -e ${BUILD_DIR}/libcurl/.build_ok ] && echo "libcurl compilation completed..." || mkdir -p ${BUILD_DIR}/libcurl/build 
+
+	cd ${BUILD_DIR}/libcurl/build && \
+	cmake .. -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} && \
+	make -j4 && sudo make install && cd -
+	touch ${BUILD_DIR}/libcurl/.build_ok
