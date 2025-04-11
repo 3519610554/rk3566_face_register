@@ -33,7 +33,7 @@ class ImageStream:
     def handle_disconnect(self):
         print('Client disconnected')
 
-    def upload_image(self, file):
+    def add_image(self, file):
         img_data = file.read()
         np_img = np.frombuffer(img_data, dtype=np.uint8)
         img = cv2.imdecode(np_img, cv2.IMREAD_COLOR)

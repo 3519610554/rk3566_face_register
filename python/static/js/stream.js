@@ -1,12 +1,29 @@
-const socket = io.connect('http://' + document.domain + ':' + location.port);
+let socket;
 
-// 监听后端发来的 'image' 事件
-socket.on('image', function(data) {
-    const img = document.getElementById('image');
-    img.src = 'data:image/jpeg;base64,' + data.data;
-});
+function startStreamInit(){
+    socket = io.connect('http://' + document.domain + ':' + location.port);
 
+    socket.on('image', function(data) {
+        const img = document.getElementById('image');
+        img.src = 'data:image/jpeg;base64,' + data.data;
+    });
+    initFormSubmit();
+}
+
+//开始推流视频
 function startStreaming() {
-    console.log('开始推流按钮被点击');
-    socket.emit('start_stream');
+    if (socket) {
+        socket.emit('start_stream');
+    } else {
+        console.error("Socket not initialized");
+    }
+}
+
+//显示固定页面
+function showPage(pageId) {
+    console.log("隐藏界面:", pageId);
+    // 隐藏所有页面
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    // 显示指定页面
+    document.getElementById(pageId).classList.add('active');
 }
