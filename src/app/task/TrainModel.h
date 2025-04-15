@@ -6,6 +6,7 @@
 #include <queue>
 #include <vector>
 #include "OpencvPublic.h"
+#include "SafeQueue.h"
 
 #define MPDEL_TRAIN_METHODS     cv::face::LBPHFaceRecognizer
 #define CONFIDENCE_THRESHOLD    100
@@ -30,7 +31,7 @@ private:
     cv::Ptr<MPDEL_TRAIN_METHODS> m_model;
     std::thread m_thread;
     std::atomic<bool> m_model_state;
-    std::queue<std::pair<std::vector<cv::Mat>, std::vector<int>>> m_queue; 
+    SafeQueue<std::pair<std::vector<cv::Mat>, std::vector<int>>> m_queue; 
 };
 
 #endif

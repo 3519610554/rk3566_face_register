@@ -19,8 +19,8 @@ class ImageStream:
         while True:
             if self.image_deque:
                 img_bytes = self.image_deque.popleft()
-                b64_img = base64.b64encode(img_bytes).decode('utf-8')
-                self.socketio.emit('image', {'data': b64_img})
+                # b64_img = base64.b64encode(img_bytes).decode('utf-8')
+                self.socketio.emit('image', {'data': img_bytes})
             self.socketio.sleep(0.01)
 
     def start_stream(self):
@@ -34,13 +34,14 @@ class ImageStream:
         print('Client disconnected')
 
     def add_image(self, file):
-        img_data = file.read()
-        np_img = np.frombuffer(img_data, dtype=np.uint8)
-        img = cv2.imdecode(np_img, cv2.IMREAD_COLOR)
+        # img_data = file
+        # np_img = np.frombuffer(img_data, dtype=np.uint8)
+        # img = cv2.imdecode(np_img, cv2.IMREAD_COLOR)
 
-        _, img_encoded = cv2.imencode('.jpg', img)
-        img_bytes = img_encoded.tobytes()
+        # _, img_encoded = cv2.imencode('.jpg', img)
+        # img_bytes = img_encoded.tobytes()
 
-        self.image_deque.append(img_bytes)
+        # self.image_deque.append(img_bytes)
+        self.image_deque.append(file)
 
         return "", 200

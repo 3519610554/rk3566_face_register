@@ -1,7 +1,9 @@
 #include "TrainModel.h"
 #include "File.h"
+#include "Task.h"
 #include <thread>
 #include <utility>
+#include <chrono> 
 
 #define FACE_MODEL_PATH         util::File::get_currentWorking_directory()+"/model/faces/"
 #define FACE_MODEL_YML          (FACE_MODEL_PATH+"face_gather.yml").c_str()
@@ -31,20 +33,19 @@ TrainModel::TrainModel(){
 
 TrainModel::~TrainModel(){
 
-    m_thread.detach();
+    m_thread.join();
 }
 
 void TrainModel::train_model(){
 
-    while(true){
+    while(Task::get_thread_state()){
         if (m_queue.empty()){
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            std::this_thread::sleep_for(std::chrono::seconds(1));
             continue;
         }
         std::vector<cv::Mat> face_images;
         std::vector<int> face_labels;
-        std::pair<std::vector<cv::Mat>, std::vector<int>> data = m_queue.front();
-        m_queue.pop();
+        std::pair<std::vector<cv::Mat>, std::vector<int>> data = m_queue.pop();
         if (util::File::file_exist(FACE_MODEL_YML)){
             m_fs.open(FACE_MODEL_YML, cv::FileStorage::READ);
             FS_FACES_READ(m_fs, face_images);

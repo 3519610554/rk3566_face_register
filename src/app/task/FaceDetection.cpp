@@ -4,9 +4,12 @@
 #include "UserSQLite.h"
 
 #define FACE_DEFAULT_MODEL  util::File::get_currentWorking_directory() + "/model/haarcascade_frontalface_default.xml"
+#define FONT_PATH           util::File::get_currentWorking_directory() + "/font/NotoSansSC-VariableFont_wght.ttf"
 
 FaceDetection::FaceDetection(){
 
+    m_ft2 = cv::freetype::createFreeType2();
+    m_ft2->loadFontData(FONT_PATH, 0);
     if (!m_face_cascade.load(FACE_DEFAULT_MODEL)) {
         std::cerr << "failed to load the face detection model!" << std::endl;
         return;
@@ -58,9 +61,14 @@ void FaceDetection::detection_face_task(cv::Mat &frame, cv::Mat face, cv::Rect f
         scalar = cv::Scalar(0, 255, 0);
         std::ostringstream ss;
         ss << std::fixed << std::setprecision(2) << confidence;
-        std::string label_text = "name:" + UserSQLite::Instance()->get_name_by_id(predicted_label) + " C:" + ss.str();
-        cv::putText(frame, label_text, cv::Point(face_rect.x, face_rect.y - 10),
-            cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 0, 0), 2);
+        // std::string label_text = "name:" + UserSQLite::Instance()->get_name_by_id(predicted_label) + " C:" + ss.str();
+        std::string label_text = UserSQLite::Instance()->get_name_by_id(predicted_label);
+        cv::Point text_org(face_rect.x, face_rect.y - 35);
+        cv::Scalar color(255, 0, 0);
+
+        m_ft2->putText(frame, label_text, text_org, 30, color, -1, cv::LINE_AA, false);
+        // cv::putText(frame, label_text, cv::Point(face_rect.x, face_rect.y - 10),
+        //     cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 0, 0), 2);
     }else {
         scalar = cv::Scalar(0, 255, 255);  // 黄色
     }

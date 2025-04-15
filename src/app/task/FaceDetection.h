@@ -13,11 +13,13 @@ public:
     void enroll_face(std::string name);
     //实例化
     static FaceDetection* Instance();
-private:
+protected:
     //录入人脸任务
     void enroll_face_task(cv::Mat &frame, cv::Mat face, cv::Rect face_rect);
     //人脸检测任务
     void detection_face_task(cv::Mat &frame, cv::Mat face, cv::Rect face_rect);
+private:
+    cv::Ptr<cv::freetype::FreeType2> m_ft2;
     cv::CascadeClassifier m_face_cascade;
     std::vector<cv::Mat> m_face_images;
     std::vector<int> m_face_labels;

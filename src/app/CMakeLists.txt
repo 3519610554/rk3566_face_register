@@ -23,7 +23,9 @@ set (EXTRA_LIBS
     # opencv_dnn 
     opencv_objdetect 
     opencv_face
+    opencv_freetype
     stdc++ dl
+    -std=c++11
     -lsqlite3
     -lcurl
 )

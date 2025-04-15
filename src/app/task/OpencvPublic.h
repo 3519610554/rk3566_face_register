@@ -8,5 +8,6 @@
 #include <opencv2/objdetect/objdetect.hpp>
 #include <opencv2/face.hpp>
 #include <condition_variable>
+#include <opencv2/freetype.hpp>
 
 #endif

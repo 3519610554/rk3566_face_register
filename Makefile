@@ -35,7 +35,7 @@ opencv:
 		-DWITH_FFMPEG=OFF -DOPENCV_FFMPEG_SKIP_BUILD_CHECK=OFF -DBUILD_opencv_objdetect=ON \
 		-DBUILD_opencv_calib3d=ON -DBUILD_opencv_dnn=ON -DBUILD_opencv_features2d=ON \
 		-DBUILD_opencv_flann=ON -DBUILD_opencv_gapi=OFF -DBUILD_opencv_ml=OFF \
-		-DWITH_GSTREAMER=OFF -DWITH_JAVA=OFF \
+		-DWITH_GSTREAMER=OFF -DWITH_JAVA=OFF -DOPENCV_ENABLE_FREE=ON \
 		-DBUILD_opencv_stitching=OFF -DBUILD_opencv_python2=OFF -DBUILD_opencv_python3=OFF \
 		-DOPENCV_EXTRA_MODULES_PATH=../opencv_contrib-4.x/modules \
 		-DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
@@ -63,3 +63,7 @@ libcurl:
 	cmake .. -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} && \
 	make -j4 && sudo make install && cd -
 	touch ${BUILD_DIR}/libcurl/.build_ok
+
+json:
+	wget https://github.com/nlohmann/json/releases/download/v3.12.0/json.hpp -P ${INSTALL_DIR}/include
+	
