@@ -6,8 +6,6 @@
 #include "Socket.h"
 #include "FaceTask.h"
 
-
- 
 int main() {
     
     Task::all_thread_start();

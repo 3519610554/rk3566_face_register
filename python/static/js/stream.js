@@ -7,7 +7,6 @@ function startStreamInit(){
         const img = document.getElementById('image');
         img.src = 'data:image/jpeg;base64,' + data.data;
     });
-    initFormSubmit();
 }
 
 //开始推流视频

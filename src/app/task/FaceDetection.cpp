@@ -2,6 +2,7 @@
 #include "File.h"
 #include "TrainModel.h"
 #include "UserSQLite.h"
+#include "WebConnect.h"
 
 #define FACE_DEFAULT_MODEL  util::File::get_currentWorking_directory() + "/model/haarcascade_frontalface_default.xml"
 #define FONT_PATH           util::File::get_currentWorking_directory() + "/font/NotoSansSC-VariableFont_wght.ttf"
@@ -67,8 +68,7 @@ void FaceDetection::detection_face_task(cv::Mat &frame, cv::Mat face, cv::Rect f
         cv::Scalar color(255, 0, 0);
 
         m_ft2->putText(frame, label_text, text_org, 30, color, -1, cv::LINE_AA, false);
-        // cv::putText(frame, label_text, cv::Point(face_rect.x, face_rect.y - 10),
-        //     cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 0, 0), 2);
+        m_valid_face ++;
     }else {
         scalar = cv::Scalar(0, 255, 255);  // 黄色
     }
@@ -80,8 +80,10 @@ void FaceDetection::detection_task(cv::Mat &frame, cv::Mat gray){
     // 检测人脸
     std::vector<cv::Rect> faces;
     m_face_cascade.detectMultiScale(gray, faces, 1.2, 5, 0, cv::Size(25, 25));
+    size_t faces_size = faces.size();
+    m_valid_face = 0;
 
-    for (size_t i = 0; i < faces.size(); i++) {
+    for (size_t i = 0; i < faces_size; i++) {
         cv::Mat face = gray(faces[i]);
         if (m_detection_state){
             enroll_face_task(frame, face, faces[i]);
@@ -89,6 +91,11 @@ void FaceDetection::detection_task(cv::Mat &frame, cv::Mat gray){
             detection_face_task(frame, face, faces[i]);
         }
     }  
+    if ((m_valid_face > 0) && m_last_face_size != m_valid_face){
+        WebConnect::Instance()->send_image(frame);
+        std::cout << "send image" << std::endl;
+        m_last_face_size = faces_size;
+    }
 }
 
 void FaceDetection::enroll_face(std::string name){

@@ -7,7 +7,7 @@
 
 FaceTask::FaceTask(){
 
-    m_input_name_flag = false;
+    
 }
 
 FaceTask::~FaceTask(){

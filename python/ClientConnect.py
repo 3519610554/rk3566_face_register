@@ -1,28 +1,30 @@
-import socket
-import struct
 import json
-import cv2
-import threading
-import base64
-import queue
-import numpy as np
 import time
-from Socket import Socket
+import queue
+from flask import Flask, request, render_template
+from flask_socketio import SocketIO, emit
 
 CHUNK_SIZE=512
 
 class ClientConnect:
-    def __init__(self):
-        self.server = Socket()
-        self.server.recv_cmd_func_bind("Test", self.Test)
-        self.data_subpackage("Test", "Hello C++")
+    def __init__(self, app_, socketio_, socket_):
+        self.m_upload_buff = ""
+        self.m_image_deque = queue.Queue()
+        self.m_app = app_
+        self.m_socketio = socketio_
+        self.m_socket = socket_
+
+        self._register_routes()
+        self._register_socketio()
+        self._register_recv()
+        
 
     def type_in_send(self, name):
         send_json = {}
         send_json["Cmd"] = "TypeIn"
         send_json["Data"] = {}
         send_json["Data"]["Name"] = name
-        self.server.send_data_add(send_json)
+        self.m_socket.send_data_add(send_json)
 
     def data_subpackage(self, cmd, data):
         total_size = len(data)
@@ -39,7 +41,49 @@ class ClientConnect:
             send_json["Data"]["NumChunks"] = num_chunks
             send_json["Data"]["CurrentBlockNum"] = i
             send_json["Data"]["Payload"] = chunk_data
-            self.server.send_data_add(send_json)
+            self.m_socket.send_data_add(send_json)
     
-    def Test(self, json_data):
-        print(f"Data: {json_data['Data']}")
+    def recv_upload(self, json_data):
+        self.m_upload_buff += json_data["Data"]["Payload"]
+        if json_data["Data"]["NumChunks"] == json_data["Data"]["CurrentBlockNum"]:
+            json_obj = json.loads(self.m_upload_buff)
+            self.m_upload_buff = ""
+            print(f"Time: {json_obj['Time']}")
+            self.m_image_deque.put(json_obj["ImgBase64"])
+            # self.m_app.image_streamingadd_image(json_obj["ImgBase64"])
+    
+    #注册接收socket接收命令函数
+    def _register_recv(self):
+        self.m_socket.recv_cmd_func_bind("upload", self.recv_upload)
+
+    def _register_routes(self):
+        self.m_app.add_url_rule('/submit_form', 'submit_form', self._submit_form, methods=['POST'])
+    
+    def _register_socketio(self):
+        self.m_socketio.on_event('start_stream', self.start_stream)
+        self.m_socketio.on_event('connect', self.handle_connect)
+        self.m_socketio.on_event('disconnect', self.handle_disconnect)
+
+    def _submit_form(self):
+        name = request.form.get('name') 
+        print("收到的姓名：", name)
+        self.type_in_send(name)
+        return render_template('index.html')
+
+    #向客户端显示照片
+    def _stream_images(self):
+        while True:
+            if not self.m_image_deque.empty():
+                img_bytes = self.m_image_deque.get()
+                self.m_socketio.emit('image', {'data': img_bytes})
+            self.m_socketio.sleep(0.01)
+    
+    def start_stream(self):
+        print('Start streaming')
+        self.m_socketio.start_background_task(self._stream_images) 
+
+    def handle_connect(self):
+        print('Client connected')
+    
+    def handle_disconnect(self):
+        print('Client disconnected')

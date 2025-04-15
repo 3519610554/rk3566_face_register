@@ -113,7 +113,7 @@ class Socket:
             state, json_data = self._recv_json_message(self.client)
             if state and (json_data["Cmd"] in self.__m_cmd_func):
                 self.__m_cmd_func[json_data["Cmd"]](json_data)
-            print(f"recv json: {json_data}")
+            # print(f"recv json: {json_data}")
 
     def send_data_add(self, json_data):
         self.__m_send_queue.put(json_data)

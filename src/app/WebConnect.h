@@ -12,8 +12,8 @@ public:
     void send_image(const cv::Mat& img);
     //数据分包
     void data_subpackage(std::string cmd, std::string data);
+    //录入人脸命令
     void type_in_recv_func(json json_data);
-    void Test(json json_data);
     //实例化
     static WebConnect* Instance();
 protected:

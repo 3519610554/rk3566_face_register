@@ -28,6 +28,11 @@ private:
     int m_count;
     int m_user_num;
     std::string m_user_name;
+
+    //上传参数
+    int m_valid_face;
+    size_t m_last_face_size;
+    std::vector<int> m_last_label;
 };
 
 #endif

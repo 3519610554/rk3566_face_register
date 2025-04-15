@@ -2,6 +2,7 @@
 #define _FACE_TASK_H
 
 #include <thread>
+#include <vector>
 
 class FaceTask{
 public:
