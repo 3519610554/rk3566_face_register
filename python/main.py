@@ -2,15 +2,17 @@ from flask import Flask, request, render_template
 from flask_socketio import SocketIO
 from Config import Config
 from Socket import Socket
+from ImgSQLite import ImgSQLite
 from ClientConnect import ClientConnect
 
 class FlaskApp:
     def __init__(self):
         self.app = Flask(__name__)
         self.app.config.from_object(Config)  
-        self.socketio = SocketIO(self.app)
+        self.socketio = SocketIO(self.app, async_mode='eventlet')
         self.server_socket = Socket()
-        self.client_connect = ClientConnect(self.app, self.socketio, self.server_socket)
+        self.images_sqlite = ImgSQLite()
+        self.client_connect = ClientConnect(self.app, self.socketio, self.server_socket, self.images_sqlite)
         self._register_routes()
     
     def _register_routes(self):

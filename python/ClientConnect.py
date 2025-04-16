@@ -4,21 +4,21 @@ import queue
 from flask import Flask, request, render_template
 from flask_socketio import SocketIO, emit
 
-CHUNK_SIZE=512
+CHUNK_SIZE = 512
 
 class ClientConnect:
-    def __init__(self, app_, socketio_, socket_):
+    def __init__(self, app_, socketio_, socket_, sqlite_):
         self.m_upload_buff = ""
         self.m_image_deque = queue.Queue()
         self.m_app = app_
         self.m_socketio = socketio_
         self.m_socket = socket_
+        self.m_sqlite = sqlite_
 
         self._register_routes()
         self._register_socketio()
         self._register_recv()
         
-
     def type_in_send(self, name):
         send_json = {}
         send_json["Cmd"] = "TypeIn"
@@ -49,9 +49,14 @@ class ClientConnect:
             json_obj = json.loads(self.m_upload_buff)
             self.m_upload_buff = ""
             print(f"Time: {json_obj['Time']}")
-            self.m_image_deque.put(json_obj["ImgBase64"])
-            # self.m_app.image_streamingadd_image(json_obj["ImgBase64"])
-    
+            insert_id = self.m_sqlite.insert(json_obj['Time'], json_obj["ImgBase64"])
+            row = [insert_id, json_obj['Time'], json_obj["ImgBase64"]]
+            self.m_image_deque.put({'id': row[0], 'time': row[1], 'image': row[2]})
+            # payload = [
+            #     {'id': row[0], 'time': row[1], 'image': row[2]} for row in data
+            # ]
+            # self.m_socketio.emit('new_images', {'images': payload})
+                
     #注册接收socket接收命令函数
     def _register_recv(self):
         self.m_socket.recv_cmd_func_bind("upload", self.recv_upload)
@@ -80,6 +85,11 @@ class ClientConnect:
     
     def start_stream(self):
         print('Start streaming')
+        data = self.m_sqlite.get_all_data()
+        while not self.m_image_deque.empty():
+            self.m_image_deque.get()
+        for row in data:
+            self.m_image_deque.put({'id': row[0], 'time': row[1], 'image': row[2]})
         self.m_socketio.start_background_task(self._stream_images) 
 
     def handle_connect(self):

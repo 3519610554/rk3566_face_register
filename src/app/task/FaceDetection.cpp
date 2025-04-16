@@ -50,7 +50,7 @@ void FaceDetection::enroll_face_task(cv::Mat &frame, cv::Mat face, cv::Rect face
     }
 }
 
-void FaceDetection::detection_face_task(cv::Mat &frame, cv::Mat face, cv::Rect face_rect){
+void FaceDetection::detection_face_task(cv::Mat &frame, cv::Mat face, cv::Rect face_rect, std::vector<int> &label){
 
     // 进行人脸识别
     int predicted_label = -1;
@@ -59,6 +59,7 @@ void FaceDetection::detection_face_task(cv::Mat &frame, cv::Mat face, cv::Rect f
     bool state = TrainModel::Instance()->train_model_get(face, predicted_label, confidence);
     // if (state && (predicted_label != -1) && (confidence < 0.6)){
     if (state && (predicted_label != -1) && (confidence < CONFIDENCE_THRESHOLD)){
+        label.push_back(predicted_label);
         scalar = cv::Scalar(0, 255, 0);
         std::ostringstream ss;
         ss << std::fixed << std::setprecision(2) << confidence;
@@ -82,19 +83,25 @@ void FaceDetection::detection_task(cv::Mat &frame, cv::Mat gray){
     m_face_cascade.detectMultiScale(gray, faces, 1.2, 5, 0, cv::Size(25, 25));
     size_t faces_size = faces.size();
     m_valid_face = 0;
+    std::vector<int> label;
 
     for (size_t i = 0; i < faces_size; i++) {
         cv::Mat face = gray(faces[i]);
         if (m_detection_state){
             enroll_face_task(frame, face, faces[i]);
         }else {
-            detection_face_task(frame, face, faces[i]);
+            detection_face_task(frame, face, faces[i], label);
         }
     }  
-    if ((m_valid_face > 0) && m_last_face_size != m_valid_face){
+    if (m_valid_face <= 0)
+        return;
+    std::sort(label.begin(), label.end());
+    if (m_last_face_size != m_valid_face || label != m_last_label){
+        m_last_face_size = m_valid_face;
+        m_last_label = label;
+        std::sort(m_last_label.begin(), m_last_label.end());
         WebConnect::Instance()->send_image(frame);
         std::cout << "send image" << std::endl;
-        m_last_face_size = faces_size;
     }
 }
 

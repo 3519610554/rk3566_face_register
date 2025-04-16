@@ -6,7 +6,8 @@
     <link rel="stylesheet" href="{{url_for('static', filename='css/style.css')}}">
     <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
     <script src="{{ url_for('static', filename='js/stream.js') }}"></script>
-    <script>startStreamInit();</script>
+    <!-- <script>startStreamInit();</script> -->
+    <script>initializeSocket();</script>
 
 </head>
 <body>
@@ -18,15 +19,14 @@
         <div style="display: flex; gap: 20px;">
             <div>
                 <h2>视频页面</h2>
-                <img id="image" style="width:640px;height:480px; margin-left: 40px;" />
-                <script>startStreaming();</script>
+                <!-- <img id="image" style="width:640px;height:480px; margin-left: 40px;" />
+                <script>startStreaming();</script> -->
             </div>
             <div>
                 <h2>录入人脸</h2>
                 <form action="/submit_form" method="POST">
                     <label for="name">姓名：</label><br>
                     <input type="text" id="name" name="name"><br><br>
-
                     <button type="submit">录入</button>
                 </form>
             </div>
@@ -37,6 +37,7 @@
     <div id="adminPage" class="page">
         <h2>后台管理</h2>
         <p>这里可以放一些控制台信息、日志或配置项。</p>
+        <script>image_show();</script>
     </div>
 </body>
 </html>
