@@ -20,7 +20,7 @@ release:
 	cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -DFRAMEWORK_NAME=${FRAMEWORK_NAME} \
 	-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} ..\
 	&& \
-	make -j2 && make install && cd -
+	make && make install && cd -
 	touch ${BUILD_DIR}/.build_ok
 	patchelf --set-rpath ${INSTALL_DIR}/lib/ ${INSTALL_DIR}/bin/${FRAMEWORK_NAME}
 opencv:

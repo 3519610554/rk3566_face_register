@@ -1,7 +1,7 @@
 import json
 import time
 import queue
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, jsonify
 from flask_socketio import SocketIO, emit
 
 CHUNK_SIZE = 512
@@ -52,10 +52,6 @@ class ClientConnect:
             insert_id = self.m_sqlite.insert(json_obj['Time'], json_obj["ImgBase64"])
             row = [insert_id, json_obj['Time'], json_obj["ImgBase64"]]
             self.m_image_deque.put({'id': row[0], 'time': row[1], 'image': row[2]})
-            # payload = [
-            #     {'id': row[0], 'time': row[1], 'image': row[2]} for row in data
-            # ]
-            # self.m_socketio.emit('new_images', {'images': payload})
                 
     #注册接收socket接收命令函数
     def _register_recv(self):
@@ -63,17 +59,26 @@ class ClientConnect:
 
     def _register_routes(self):
         self.m_app.add_url_rule('/submit_form', 'submit_form', self._submit_form, methods=['POST'])
+        self.m_app.add_url_rule('/delete_image', 'delete_image', self._delete_image, methods=['POST'])
     
     def _register_socketio(self):
         self.m_socketio.on_event('start_stream', self.start_stream)
         self.m_socketio.on_event('connect', self.handle_connect)
         self.m_socketio.on_event('disconnect', self.handle_disconnect)
 
+    #录入人脸
     def _submit_form(self):
-        name = request.form.get('name') 
-        print("收到的姓名：", name)
+        name = request.get_json().get('name') 
+        print("_submit_form recv name: ", name)
         self.type_in_send(name)
-        return render_template('index.html')
+        return jsonify({"message": "录入成功", "status": "ok"}), 200
+
+    #删除显示图片
+    def _delete_image(self):
+        image_id = request.get_json().get('id')
+        print("_delete_image recv id: ", image_id)
+        self.m_sqlite.delete_by_id(image_id)
+        return jsonify({"message": "删除成功", "status": "ok"}), 200
 
     #向客户端显示照片
     def _stream_images(self):

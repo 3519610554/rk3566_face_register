@@ -19,10 +19,12 @@ protected:
     //人脸检测任务
     void detection_face_task(cv::Mat &frame, cv::Mat face, cv::Rect face_rect, std::vector<int> &label);
 private:
+    // cv::dnn::Net m_net;
     cv::Ptr<cv::freetype::FreeType2> m_ft2;
     cv::CascadeClassifier m_face_cascade;
     std::vector<cv::Mat> m_face_images;
     std::vector<int> m_face_labels;
+    std::vector<cv::Rect> m_faces;
     
     bool m_detection_state;
     int m_count;
@@ -30,9 +32,10 @@ private:
     std::string m_user_name;
 
     //上传参数
-    int m_valid_face;
     size_t m_last_face_size;
     std::vector<int> m_last_label;
+
+    int m_cnt;
 };
 
 #endif

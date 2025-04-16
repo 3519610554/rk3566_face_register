@@ -24,10 +24,10 @@
             </div>
             <div>
                 <h2>录入人脸</h2>
-                <form action="/submit_form" method="POST">
+                <form id="dateEntry">
                     <label for="name">姓名：</label><br>
                     <input type="text" id="name" name="name"><br><br>
-                    <button type="submit">录入</button>
+                    <button type="submit" onclick="submitForm(event)">录入</button>
                 </form>
             </div>
         </div>
@@ -36,7 +36,6 @@
     <!-- 后台页面 -->
     <div id="adminPage" class="page">
         <h2>后台管理</h2>
-        <p>这里可以放一些控制台信息、日志或配置项。</p>
         <script>image_show();</script>
     </div>
 </body>

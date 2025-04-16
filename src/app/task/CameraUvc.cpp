@@ -4,7 +4,7 @@
 #include <cstdlib>
 
 #define CAP_WIDTH                   320
-#define CAP_HEIGHT                  240
+#define CAP_HEIGHT                  176
 
 CameraUvc::CameraUvc(std::string camera_id){
 

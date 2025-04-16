@@ -4,7 +4,12 @@
 #include "UserSQLite.h"
 #include "WebConnect.h"
 
-#define FACE_DEFAULT_MODEL  util::File::get_currentWorking_directory() + "/model/haarcascade_frontalface_default.xml"
+// #define NET_PROTOTXT        util::File::get_currentWorking_directory() + "/model/deploy.prototxt"
+// #define NET_CAFFEMODEL      util::File::get_currentWorking_directory() + "/model/res10_300x300_ssd_iter_140000.caffemodel"
+// #define FACE_DEFAULT_MODEL  util::File::get_currentWorking_directory() + "/model/haarcascade_frontalface_default.xml"
+#define FACE_DEFAULT_MODEL  util::File::get_currentWorking_directory() + "/model/haarcascade_frontalface_alt2.xml"
+// #define FACE_DEFAULT_MODEL  util::File::get_currentWorking_directory() + "/model/det_500m.onnx"
+// #define FACE_DEFAULT_MODEL  util::File::get_currentWorking_directory() + "/model/haarcascade_frontalcatface.xml"
 #define FONT_PATH           util::File::get_currentWorking_directory() + "/font/NotoSansSC-VariableFont_wght.ttf"
 
 FaceDetection::FaceDetection(){
@@ -19,6 +24,7 @@ FaceDetection::FaceDetection(){
     m_count = 0;
     m_user_num = UserSQLite::Instance()->get_row_count();
     TrainModel::Instance();
+    m_cnt = 0;
 }
 
 FaceDetection::~FaceDetection(){
@@ -57,7 +63,6 @@ void FaceDetection::detection_face_task(cv::Mat &frame, cv::Mat face, cv::Rect f
     double confidence = 0.0;
     cv::Scalar scalar;
     bool state = TrainModel::Instance()->train_model_get(face, predicted_label, confidence);
-    // if (state && (predicted_label != -1) && (confidence < 0.6)){
     if (state && (predicted_label != -1) && (confidence < CONFIDENCE_THRESHOLD)){
         label.push_back(predicted_label);
         scalar = cv::Scalar(0, 255, 0);
@@ -69,7 +74,6 @@ void FaceDetection::detection_face_task(cv::Mat &frame, cv::Mat face, cv::Rect f
         cv::Scalar color(255, 0, 0);
 
         m_ft2->putText(frame, label_text, text_org, 30, color, -1, cv::LINE_AA, false);
-        m_valid_face ++;
     }else {
         scalar = cv::Scalar(0, 255, 255);  // 黄色
     }
@@ -77,27 +81,28 @@ void FaceDetection::detection_face_task(cv::Mat &frame, cv::Mat face, cv::Rect f
 }
 
 void FaceDetection::detection_task(cv::Mat &frame, cv::Mat gray){
-
-    // 检测人脸
-    std::vector<cv::Rect> faces;
-    m_face_cascade.detectMultiScale(gray, faces, 1.2, 5, 0, cv::Size(25, 25));
-    size_t faces_size = faces.size();
-    m_valid_face = 0;
+    
+    m_cnt ++;
+    if (m_cnt >= 2){
+        m_cnt = 0;
+        m_face_cascade.detectMultiScale(gray, m_faces, 1.2, 10, 0, cv::Size(30, 30));
+    }
+    size_t faces_size = m_faces.size();
     std::vector<int> label;
 
     for (size_t i = 0; i < faces_size; i++) {
-        cv::Mat face = gray(faces[i]);
+        cv::Mat face = gray(m_faces[i]);
         if (m_detection_state){
-            enroll_face_task(frame, face, faces[i]);
+            enroll_face_task(frame, face, m_faces[i]);
         }else {
-            detection_face_task(frame, face, faces[i], label);
+            detection_face_task(frame, face, m_faces[i], label);
         }
     }  
-    if (m_valid_face <= 0)
+    if (label.size() <= 0)
         return;
     std::sort(label.begin(), label.end());
-    if (m_last_face_size != m_valid_face || label != m_last_label){
-        m_last_face_size = m_valid_face;
+    if (m_last_face_size != label.size() || label != m_last_label){
+        m_last_face_size = label.size();
         m_last_label = label;
         std::sort(m_last_label.begin(), m_last_label.end());
         WebConnect::Instance()->send_image(frame);
