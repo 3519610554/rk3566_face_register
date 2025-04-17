@@ -22,9 +22,9 @@ protected:
     //获取人脸
     size_t detection_faces(cv::Mat image, std::vector<cv::Rect> &objects);
     //录入人脸任务
-    void enroll_face_task(cv::Mat &frame, cv::Mat face, cv::Rect face_rect);
+    void enroll_face_task(cv::Mat &frame, cv::Mat &gray, std::vector<cv::Rect> faces);
     //人脸检测任务
-    void detection_face_task(cv::Mat &frame, cv::Mat face, cv::Rect face_rect, std::vector<int> &label);
+    void detection_face_task(cv::Mat &frame, cv::Mat &gray, std::vector<cv::Rect> faces);
 private:
     // cv::dnn::Net m_net;
     //中文字体
@@ -34,22 +34,23 @@ private:
     //人脸坐标
     std::vector<cv::Rect> m_faces;
     //录入照片
-    std::vector<cv::Mat> m_face_images;
+    std::vector<cv::Mat> m_enroll_face_images;
     //录入标签
-    std::vector<int> m_face_labels;
+    std::vector<int> m_enroll_face_labels;
+    //图片处理线程
     std::thread m_thread;
     //处理帧队列
     SafeQueue<cv::Mat> m_frame;
-    //录入和检测标志位
-    bool m_detection_state;
+    //帧间隔
+    int m_frame_interval_cnt;
+    //录入和检测任务函数
+    std::function<void(cv::Mat&, cv::Mat&, std::vector<cv::Rect>)> m_face_task;
     //录入人脸总数
     int m_user_num;
     //录入人名
     std::string m_user_name;
-    
-    //上传参数
-    size_t m_last_face_size;
-    std::vector<int> m_last_label;
+    //检测上一次有效标签的个数
+    std::vector<int> m_last_detection_label;
 };
 
 #endif

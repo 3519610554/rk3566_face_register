@@ -32,13 +32,7 @@ void FaceTask::run(){
         if (!CameraUvc::Instance()->frame_get(frame)){
             break;
         }         
-        // cv::Mat gray;
-        // cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
-
-        // FaceDetection::Instance()->detection_task(frame, gray);
         FaceDetection::Instance()->frame_data_add(frame);
-        // cv::imshow("USB Camera", frame);
-        // cv::waitKey(1);
 
         int ch = util::InputCheck::get_char_non_blocking();
         if (ch == 'q') {
