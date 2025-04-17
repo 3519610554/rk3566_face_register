@@ -3,6 +3,8 @@
 #include "TrainModel.h"
 #include "UserSQLite.h"
 #include "WebConnect.h"
+#include "Task.h"
+#include <sys/types.h>
 
 // #define NET_PROTOTXT        util::File::get_currentWorking_directory() + "/model/deploy.prototxt"
 // #define NET_CAFFEMODEL      util::File::get_currentWorking_directory() + "/model/res10_300x300_ssd_iter_140000.caffemodel"
@@ -21,10 +23,9 @@ FaceDetection::FaceDetection(){
         return;
     }
     m_detection_state = false;
-    m_count = 0;
     m_user_num = UserSQLite::Instance()->get_row_count();
     TrainModel::Instance();
-    m_cnt = 0;
+    m_thread = std::thread(&FaceDetection::dispose_thread, this);
 }
 
 FaceDetection::~FaceDetection(){
@@ -32,21 +33,67 @@ FaceDetection::~FaceDetection(){
 
 }
 
+size_t FaceDetection::detection_faces(cv::Mat image, std::vector<cv::Rect> &objects){
+
+    static int frmae_cnt = 0;
+
+    if (++frmae_cnt < 2)
+        return 0;
+    frmae_cnt = 0;
+
+    m_face_cascade.detectMultiScale(image, objects, 1.2, 6, 0, cv::Size(30, 30));
+
+    return objects.size();
+}
+
+void FaceDetection::dispose_thread(){
+
+    std::cout << "dispose thread start successfuly" << std::endl;
+
+    while(true){
+        cv::Mat frame = m_frame.pop();
+        cv::Mat gray;
+        cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
+        detection_faces(gray, m_faces);
+        size_t faces_size = m_faces.size();
+        std::vector<int> label;
+        for (size_t i = 0; i < faces_size; i++) {
+            cv::Mat face = gray(m_faces[i]);
+            if (m_detection_state){
+                enroll_face_task(frame, face, m_faces[i]);
+            }else {
+                detection_face_task(frame, face, m_faces[i], label);
+            }
+        }  
+        cv::imshow("USB Camera", frame);
+        cv::waitKey(1);
+        // if (label.size() <= 0)
+        //     return;
+        // std::sort(label.begin(), label.end());
+        // if (m_last_face_size != label.size() || label != m_last_label){
+        //     m_last_face_size = label.size();
+        //     m_last_label = label;
+        //     std::sort(m_last_label.begin(), m_last_label.end());
+        //     WebConnect::Instance()->send_image(frame);
+        //     std::cout << "send image" << std::endl;
+        // }
+    }
+}
+
 void FaceDetection::enroll_face_task(cv::Mat &frame, cv::Mat face, cv::Rect face_rect){
 
     TrainModel::Instance()->train_size(face);
     m_face_images.push_back(face);
     m_face_labels.push_back(m_user_num);
-    m_count++;
+    size_t count = m_face_images.size();
 
     // 显示采集状态
-    std::string label_text = "gather:" + std::to_string((int)((m_count*100)/50.0f)) + "%";
+    std::string label_text = "gather:" + std::to_string((int)((count*100)/50.0f)) + "%";
     cv::rectangle(frame, face_rect, cv::Scalar(0, 255, 0), 2);
     putText(frame, label_text, cv::Point(25, 25), cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 0, 0), 2);
 
     // 如果已经采集了50张图像，停止采集
-    if (m_count >= 50) {
-        m_count = 0;
+    if (count >= 50) {
         m_detection_state = false;
         std::cout << "The " << m_user_num << " facial image capture has been completed." << std::endl;
         TrainModel::Instance()->train_data_add(m_face_images, m_face_labels);
@@ -80,34 +127,9 @@ void FaceDetection::detection_face_task(cv::Mat &frame, cv::Mat face, cv::Rect f
     cv::rectangle(frame, face_rect, scalar, 2);
 }
 
-void FaceDetection::detection_task(cv::Mat &frame, cv::Mat gray){
-    
-    m_cnt ++;
-    if (m_cnt >= 2){
-        m_cnt = 0;
-        m_face_cascade.detectMultiScale(gray, m_faces, 1.2, 10, 0, cv::Size(30, 30));
-    }
-    size_t faces_size = m_faces.size();
-    std::vector<int> label;
+void FaceDetection::frame_data_add(cv::Mat frame){
 
-    for (size_t i = 0; i < faces_size; i++) {
-        cv::Mat face = gray(m_faces[i]);
-        if (m_detection_state){
-            enroll_face_task(frame, face, m_faces[i]);
-        }else {
-            detection_face_task(frame, face, m_faces[i], label);
-        }
-    }  
-    if (label.size() <= 0)
-        return;
-    std::sort(label.begin(), label.end());
-    if (m_last_face_size != label.size() || label != m_last_label){
-        m_last_face_size = label.size();
-        m_last_label = label;
-        std::sort(m_last_label.begin(), m_last_label.end());
-        WebConnect::Instance()->send_image(frame);
-        std::cout << "send image" << std::endl;
-    }
+    m_frame.push(frame);
 }
 
 void FaceDetection::enroll_face(std::string name){

@@ -20,7 +20,6 @@ set (EXTRA_LIBS
     opencv_core 
     # opencv_video 
     opencv_videoio 
-    # opencv_dnn 
     opencv_objdetect 
     opencv_face
     opencv_freetype
