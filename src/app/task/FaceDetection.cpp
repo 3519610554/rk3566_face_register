@@ -20,22 +20,36 @@
 
 FaceDetection::FaceDetection(){
 
+    m_frame_interval_cnt = 0;
+    m_face_task = TASK_SWITCH(detection_face_task);
+    m_user_num = UserSQLite::Instance()->get_row_count();
+}
+
+FaceDetection::~FaceDetection(){
+
+
+}
+
+FaceDetection* FaceDetection::Instance(){
+
+    static FaceDetection face_detection;
+
+    return &face_detection;
+}
+
+void FaceDetection::initialize(){
+
     m_ft2 = cv::freetype::createFreeType2();
     m_ft2->loadFontData(FONT_PATH, 0);
     if (!m_face_cascade.load(FACE_DEFAULT_MODEL)) {
         std::cerr << "failed to load the face detection model!" << std::endl;
         return;
     }
-    m_frame_interval_cnt = 0;
-    m_face_task = TASK_SWITCH(detection_face_task);
-    m_user_num = UserSQLite::Instance()->get_row_count();
-    TrainModel::Instance();
-    m_thread = std::thread(&FaceDetection::dispose_thread, this);
 }
 
-FaceDetection::~FaceDetection(){
+void FaceDetection::start(){
 
-
+    m_thread = std::thread(&FaceDetection::dispose_thread, this);
 }
 
 size_t FaceDetection::detection_faces(cv::Mat image, std::vector<cv::Rect> &objects){
@@ -138,11 +152,4 @@ void FaceDetection::enroll_face(std::string name){
     m_face_task = TASK_SWITCH(enroll_face_task);
     m_user_name = name;
     m_user_num ++;
-}
-
-FaceDetection* FaceDetection::Instance(){
-
-    static FaceDetection face_detection;
-
-    return &face_detection;
 }

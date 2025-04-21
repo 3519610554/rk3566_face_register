@@ -14,6 +14,11 @@ FaceTask::~FaceTask(){
     
 }
 
+void FaceTask::initialize(){
+
+    
+}
+
 void FaceTask::start(){
 
     m_thread = std::thread(&FaceTask::run, this);

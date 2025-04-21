@@ -23,17 +23,23 @@ WebConnect::~WebConnect(){
     
 }
 
-void WebConnect::type_in_recv_func(json json_data){
 
-    std::string name = json_data["Data"]["Name"];
-    FaceDetection::Instance()->enroll_face(name);
+WebConnect* WebConnect::Instance(){
+
+    static WebConnect web_connect;
+
+    return &web_connect;
 }
 
-std::string WebConnect::mat_to_buffer(const cv::Mat& img){
+void WebConnect::initialize(){
 
-    std::vector<uchar> buf;
-    cv::imencode(".jpg", img, buf);  // 将图像编码为 JPEG 格式
-    return std::string(reinterpret_cast<char*>(buf.data()), buf.size());
+    Socket::Instance()->initialize();
+    
+}
+
+void WebConnect::start(){
+
+    Socket::Instance()->start();
 }
 
 void WebConnect::send_image(const cv::Mat& img){
@@ -64,14 +70,19 @@ void WebConnect::data_subpackage(std::string cmd, std::string data){
         send_json["Data"]["NumChunks"] = num_chunks;
         send_json["Data"]["CurrentBlockNum"] = i + 1;
         send_json["Data"]["Payload"] = chunk_data;
-        
         Socket::Instance()->sned_data_add(send_json);
     }
 }
 
-WebConnect* WebConnect::Instance(){
+void WebConnect::type_in_recv_func(json json_data){
 
-    static WebConnect web_connect;
+    std::string name = json_data["Data"]["Name"];
+    FaceDetection::Instance()->enroll_face(name);
+}
 
-    return &web_connect;
+std::string WebConnect::mat_to_buffer(const cv::Mat& img){
+
+    std::vector<uchar> buf;
+    cv::imencode(".jpg", img, buf);  // 将图像编码为 JPEG 格式
+    return std::string(reinterpret_cast<char*>(buf.data()), buf.size());
 }

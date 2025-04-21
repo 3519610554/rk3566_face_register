@@ -10,12 +10,16 @@ class FaceDetection{
 public:
     FaceDetection();
     ~FaceDetection();
+    //实例化
+    static FaceDetection* Instance();
+    //初始化
+    void initialize();
+    //线程启动
+    void start();
     //添加处理帧
     void frame_data_add(cv::Mat frame);
     //人脸录入
     void enroll_face(std::string name);
-    //实例化
-    static FaceDetection* Instance();
 protected:
     //图像处理线程
     void dispose_thread();

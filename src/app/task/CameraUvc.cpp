@@ -6,7 +6,25 @@
 #define CAP_WIDTH                   320
 #define CAP_HEIGHT                  176
 
-CameraUvc::CameraUvc(std::string camera_id){
+CameraUvc::CameraUvc(){
+
+    
+}
+
+CameraUvc::~CameraUvc(){
+    
+    m_cap.release();
+    cv::destroyAllWindows();
+}
+
+CameraUvc* CameraUvc::Instance(){
+
+    static CameraUvc camera;
+
+    return &camera;
+}
+
+void CameraUvc::initialize(std::string camera_id){
 
     m_cap = cv::VideoCapture(camera_id, cv::CAP_V4L2);
     // 设置摄像头参数：MJPG + 分辨率 + 帧率
@@ -17,12 +35,6 @@ CameraUvc::CameraUvc(std::string camera_id){
     setenv("DISPLAY", ":10.0", 1);
 
     std::cout << "fps: " << m_cap.get(cv::CAP_PROP_FPS) << std::endl;
-}
-
-CameraUvc::~CameraUvc(){
-    
-    m_cap.release();
-    cv::destroyAllWindows();
 }
 
 bool CameraUvc::frame_get(cv::Mat &frame){
@@ -36,9 +48,3 @@ bool CameraUvc::frame_get(cv::Mat &frame){
     return true;
 }
 
-CameraUvc* CameraUvc::Instance(){
-
-    static CameraUvc camera;
-
-    return &camera;
-}

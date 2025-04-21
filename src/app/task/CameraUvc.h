@@ -5,12 +5,14 @@
 
 class CameraUvc{
 public:
-    CameraUvc(std::string camera_id = "/dev/video0");
+    CameraUvc();
     ~CameraUvc();
-    //获取帧照片
-    bool frame_get(cv::Mat &frame);
     //实例化
     static CameraUvc* Instance();
+    //初始化
+    void initialize(std::string camera_id = "/dev/video0");
+    //获取帧照片
+    bool frame_get(cv::Mat &frame);
 private:
     cv::VideoCapture m_cap;
 };

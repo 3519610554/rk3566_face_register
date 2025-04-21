@@ -2,7 +2,6 @@
 #include <queue>
 #include <mutex>
 #include <condition_variable>
-#include <opencv2/opencv.hpp>
 
 template<typename T>
 class SafeQueue {

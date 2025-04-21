@@ -15,6 +15,12 @@ class TrainModel{
 public:
     TrainModel();
     ~TrainModel();
+    //实例化
+    static TrainModel* Instance();
+    //初始化
+    void initialize();
+    //线程启动
+    void start();
     //训练模型
     void train_model();
     //模型图片大小修正
@@ -23,8 +29,6 @@ public:
     bool train_model_get(cv::Mat face, int &label, double &confidence);
     //训练模型数据添加
     void train_data_add(std::vector<cv::Mat> face, std::vector<int> label);
-    //实例化
-    static TrainModel* Instance();
 private:
     cv::FileStorage m_fs;
     // cv::Ptr<cv::face::EigenFaceRecognizer> m_model;

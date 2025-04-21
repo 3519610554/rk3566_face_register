@@ -19,30 +19,39 @@
 #define FS_LABELS_READ(x, data)     x["labels"] >> data
 
 TrainModel::TrainModel(){
-    
     util::File::create_file((FACE_MODEL_PATH).c_str(), nullptr);
     m_model = MPDEL_TRAIN_METHODS::create();
+}
+
+TrainModel::~TrainModel(){
+
+}
+
+TrainModel* TrainModel::Instance(){
+
+    static TrainModel train_model;
+
+    return &train_model;
+}
+
+void TrainModel::initialize(){
+
     if (util::File::file_exist(FACE_MODEL)){
         m_model->read(FACE_MODEL);
         m_model_state.store(true);
     }else {
         m_model_state.store(false);
     }
-    m_thread = std::thread(&TrainModel::train_model, this);
 }
 
-TrainModel::~TrainModel(){
+void TrainModel::start(){
 
-    m_thread.join();
+    m_thread = std::thread(&TrainModel::train_model, this);
 }
 
 void TrainModel::train_model(){
 
     while(Task::get_thread_state()){
-        if (m_queue.empty()){
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-            continue;
-        }
         std::vector<cv::Mat> face_images;
         std::vector<int> face_labels;
         std::pair<std::vector<cv::Mat>, std::vector<int>> data = m_queue.pop();
@@ -91,11 +100,4 @@ bool TrainModel::train_model_get(cv::Mat face, int &label, double &confidence){
 void TrainModel::train_data_add(std::vector<cv::Mat> face, std::vector<int> label){
 
     m_queue.push(std::make_pair(face, label));
-}
-
-TrainModel* TrainModel::Instance(){
-
-    static TrainModel train_model;
-
-    return &train_model;
 }

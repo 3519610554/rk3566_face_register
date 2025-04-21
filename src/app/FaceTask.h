@@ -8,9 +8,14 @@ class FaceTask{
 public:
     FaceTask();
     ~FaceTask();
-    void start();
-    void wait();
+    //实例化
     static FaceTask* Instance();
+    //初始化
+    void initialize();
+    //线程启动
+    void start();
+    //等待线程
+    void wait();
 protected:
     void run();
 private:
