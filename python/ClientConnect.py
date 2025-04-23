@@ -18,12 +18,21 @@ class ClientConnect:
         self._register_routes()
         self._register_socketio()
         self._register_recv()
-        
+
+    #录入人脸命令
     def type_in_send(self, name):
         send_json = {}
         send_json["Cmd"] = "TypeIn"
         send_json["Data"] = {}
         send_json["Data"]["Name"] = name
+        self.m_socket.send_data_add(send_json)
+
+    #删除照片发送给服务端
+    def delete_image_send(self, id):
+        send_json = {}
+        send_json["Cmd"] = "DeleteImage"
+        send_json["Data"] = {}
+        send_json["Data"]["Id"] = id
         self.m_socket.send_data_add(send_json)
 
     def data_subpackage(self, cmd, data):
@@ -49,13 +58,21 @@ class ClientConnect:
             json_obj = json.loads(self.m_upload_buff)
             self.m_upload_buff = ""
             print(f"Time: {json_obj['Time']}")
-            insert_id = self.m_sqlite.insert(json_obj['Time'], json_obj["ImgBase64"])
-            row = [insert_id, json_obj['Time'], json_obj["ImgBase64"]]
+            # insert_id = self.m_sqlite.insert(json_obj['Time'], json_obj["ImgBase64"])
+            image_id = json_obj['Id']
+            image_time = json_obj['Time']
+            image_base64 = json_obj['ImgBase64']
+            self.m_sqlite.insert(image_id, image_time, image_base64)
+            row = [image_id, image_time, image_base64]
             self.m_image_deque.put({'id': row[0], 'time': row[1], 'image': row[2]})
                 
     #注册接收socket接收命令函数
     def _register_recv(self):
         self.m_socket.recv_cmd_func_bind("upload", self.recv_upload)
+        self.m_socket.recv_cmd_func_bind("UploadId", self._recv_UploadId)
+
+    def _recv_UploadId(self):
+        pass
 
     def _register_routes(self):
         self.m_app.add_url_rule('/submit_form', 'submit_form', self._submit_form, methods=['POST'])
@@ -73,10 +90,12 @@ class ClientConnect:
         self.type_in_send(name)
         return jsonify({"message": "录入成功", "status": "ok"}), 200
 
+
     #删除显示图片
     def _delete_image(self):
         image_id = request.get_json().get('id')
         print("_delete_image recv id: ", image_id)
+        self.delete_image_send(image_id)
         self.m_sqlite.delete_by_id(image_id)
         return jsonify({"message": "删除成功", "status": "ok"}), 200
 

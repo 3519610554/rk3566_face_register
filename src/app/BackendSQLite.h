@@ -24,6 +24,8 @@ public:
     int get_row_count();
     //获取全部数据
     void get_all_data(std::vector<Backend_Info> &data);
+    //获取全部id
+    void get_all_id(std::vector<int> id_data);
 protected:
     //打开数据库
     void open_sqlite();

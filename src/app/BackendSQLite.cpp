@@ -1,6 +1,7 @@
 #include "BackendSQLite.h"
 #include "File.h"
 #include "sqlite3.h"
+#include <algorithm>
 
 #define SQL_FILE_PATH           (util::File::get_currentWorking_directory()+"/sql/")
 #define SQL_FILE                (SQL_FILE_PATH + "BackendSQLite.db")
@@ -101,6 +102,26 @@ void BackendSQLite::get_all_data(std::vector<Backend_Info> &data){
         data.push_back(info);
     }
     clean_resource();
+    std::reverse(data.begin(), data.end());
+}
+
+void BackendSQLite::get_all_id(std::vector<int> id_data){
+
+    open_sqlite();
+    std::string sql = "SELECT id FROM images;";
+    int rc = sqlite3_prepare_v2(m_db, sql.c_str(), -1, &m_stmt, nullptr);
+    if (rc != SQLITE_OK) {
+        std::cerr << "failed to prepare statement: " << sqlite3_errmsg(m_db) << std::endl;
+        close_sqlite();
+        return;
+    }
+    while (sqlite3_step(m_stmt) == SQLITE_ROW){
+        int id = sqlite3_column_int(m_stmt, 0);
+        
+        id_data.push_back(id);
+    }
+    clean_resource();
+    std::reverse(id_data.begin(), id_data.end());
 }
 
 void BackendSQLite::open_sqlite(){

@@ -52,6 +52,15 @@ void WebConnect::send_image(int sockfd, int id, std::string time, std::string im
     std::cout << "send image" << std::endl;
 }
 
+void WebConnect::send_image_id(int sockfd, json id_arr){
+
+    json json_data;
+    json_data["Id"] = id_arr;
+    std::string json_str = json_data.dump();
+    data_subpackage(sockfd, "UploadId", json_str);
+    std::cout << "send all id" << std::endl;
+}
+
 void WebConnect::data_subpackage(int sockfd, std::string cmd, std::string data){
 
     size_t total_size = data.size();
@@ -74,13 +83,21 @@ void WebConnect::data_subpackage(int sockfd, std::string cmd, std::string data){
 
 void WebConnect::connect_successfly_func(int client_id){
 
-    std::vector<Backend_Info> data;
+    // std::vector<Backend_Info> data;
+    std::vector<int> id_data;
 
-    BackendSQLite::Instance()->get_all_data(data);
-    for (auto& row : data){
-        send_image(client_id, row.id, row.time, row.base64);
+    // BackendSQLite::Instance()->get_all_data(data);
+    // for (auto& row : data){
+    //     send_image(client_id, row.id, row.time, row.base64);
+    // }
+    BackendSQLite::Instance()->get_all_id(id_data);
+    json j_array = json::array();
+    for (auto& row : id_data){
+        // send_image(client_id, row.id, row.time, row.base64);
+        j_array.push_back(row);
     }
-    std::cout << "send sql image: " << data.size() << std::endl;
+    send_image_id(client_id, j_array);
+    std::cout << "send sql image: " << id_data.size() << std::endl;
 }
 
 void WebConnect::type_in_recv_func(json json_data){

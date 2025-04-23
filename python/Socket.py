@@ -7,10 +7,9 @@ import queue
 import time
 
 class Socket:
-    def __init__(self, host='0.0.0.0', port=8080):
-        self.__m_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.__m_server.bind((host, port))
-        self.__m_server.listen(1)
+    def __init__(self, host='10.34.4.112', port=8080):
+        self.__host = host
+        self.__port = port 
         self.__m_send_queue = queue.Queue()
         self.__m_recv_queue = queue.Queue()
         self.__m_connect_state = False
@@ -27,7 +26,7 @@ class Socket:
         self.__m_recv_thread.start()
     
     def __del__(self):
-        self.__m_server.close()
+        self.__m_sock.close()
 
     #等待 __m_connect_state 为false
     def wait_for_connect_state_false(self):
@@ -67,11 +66,11 @@ class Socket:
     
     #接收 JSON 数据
     def _recv_json_message(self, sockfd):
-        len_net = self._recv_exact(self.client, 4)
+        len_net = self._recv_exact(self.__m_sock, 4)
         if not len_net:
             return False, None
         msg_len = struct.unpack('!I', len_net)[0]
-        data = self._recv_exact(self.client, msg_len)
+        data = self._recv_exact(self.__m_sock, msg_len)
         try:
             json_data = json.loads(data.decode('utf-8'))
         except:
@@ -82,18 +81,23 @@ class Socket:
     def _socket_send(self, json_data):
         json_str = json.dumps(json_data)
         msg_len = struct.pack("<I", socket.htonl(len(json_str)))
-        state = self.client.send(msg_len)
-        state = self.client.send(json_str.encode('utf-8'))
+        state = self.__m_sock.send(msg_len)
+        state = self.__m_sock.send(json_str.encode('utf-8'))
         self.set_connect_state_and_notify(state > 0)
 
     #连接客户端线程
     def _connect_thread(self):
         while True:
             self.wait_for_connect_state_false()
-            self.client, self.client_addr = self.__m_server.accept()
-            self.set_keepalive(self.client)
-            self.set_connect_state_and_notify(True)
-            print("successfuly to C++ connect!")
+            try:
+                self.__m_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.__m_sock.connect((self.__host, self.__port))
+                self.set_keepalive(self.__m_sock)
+                self.set_connect_state_and_notify(True)
+                print("successfuly to C++ connect!")
+            except Exception as e:
+                self.__m_sock.close()
+                time.sleep(10)
 
     def _send_thread(self):
 
@@ -110,7 +114,7 @@ class Socket:
 
         while True:
             self.wait_for_connect_state_true()
-            state, json_data = self._recv_json_message(self.client)
+            state, json_data = self._recv_json_message(self.__m_sock)
             if state and (json_data["Cmd"] in self.__m_cmd_func):
                 self.__m_cmd_func[json_data["Cmd"]](json_data)
             # print(f"recv json: {json_data}")

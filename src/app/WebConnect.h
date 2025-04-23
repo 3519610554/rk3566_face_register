@@ -14,6 +14,8 @@ public:
     void initialize();
     //发送图片
     void send_image(int sockfd, int id, std::string time, std::string imageBase64);
+    //发送id
+    void send_image_id(int sockfd, json id_arr);
     //数据分包
     void data_subpackage(int sockfd, std::string cmd, std::string data);
 protected:

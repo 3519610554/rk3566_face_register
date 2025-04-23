@@ -20,12 +20,12 @@ class ImgSQLite:
         conn.commit()
         conn.close()
 
-    def insert(self, in_time, in_base64):
+    def insert(self, in_id, in_time, in_base64):
         conn = sqlite3.connect(image_sqlite)
         cursor = conn.cursor()
         cursor.execute('''
-            INSERT INTO images (time, base64) VALUES (?, ?)
-        ''', (in_time, in_base64))
+            INSERT INTO images (id, time, base64) VALUES (?, ?, ?)
+        ''', (in_id, in_time, in_base64))
         conn.commit()
         last_id = cursor.lastrowid
         conn.close()
