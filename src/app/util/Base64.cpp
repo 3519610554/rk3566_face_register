@@ -137,4 +137,11 @@ string decodeBase64(const string &txt){
     ret.resize(size);
     return ret;
 }
+
+std::string mat_to_buffer(cv::Mat& img){
+
+    std::vector<uchar> buf;
+    cv::imencode(".jpg", img, buf);  // 将图像编码为 JPEG 格式
+    return std::string(reinterpret_cast<char*>(buf.data()), buf.size());
+}
 }

@@ -3,10 +3,10 @@
 #include <unistd.h>
 #include <json.hpp>
 #include <cstdint>
-#include "Base64.h"
 #include "LocalTime.h"
 #include "Socket.h"
 #include "FaceDetection.h"
+#include "BackendSQLite.h"
 
 #define CHUNK_SIZE                  512
 
@@ -14,6 +14,8 @@ using json = nlohmann::json;
 
 WebConnect::WebConnect(){
 
+    Socket::Instance()->connect_sucessfly_func_bind(
+        [this](int client_id) {this->connect_successfly_func(client_id);});
     Socket::Instance()->recv_cmd_func_bind("TypeIn", 
         [this](json json_data) { this->type_in_recv_func(json_data); });
 }
@@ -42,19 +44,19 @@ void WebConnect::start(){
     Socket::Instance()->start();
 }
 
-void WebConnect::send_image(const cv::Mat& img){
-
-    std::string imgBase64 = util::encodeBase64(mat_to_buffer(img));
-    std::string current_time = util::LocalTime::get_cuurent_time();
+void WebConnect::send_image(int sockfd, int id, std::string time, std::string imageBase64){
+        
     json json_data;
-    json_data["Time"] = current_time;
-    json_data["ImgBase64"] = imgBase64;
+    json_data["Id"] = id;
+    json_data["Time"] = time;
+    json_data["ImgBase64"] = imageBase64;
     std::string json_str = json_data.dump();
 
-    data_subpackage("upload", json_str);
+    data_subpackage(sockfd, "upload", json_str);
+    std::cout << "send image" << std::endl;
 }
 
-void WebConnect::data_subpackage(std::string cmd, std::string data){
+void WebConnect::data_subpackage(int sockfd, std::string cmd, std::string data){
 
     size_t total_size = data.size();
     size_t chunk_size = CHUNK_SIZE;
@@ -70,7 +72,7 @@ void WebConnect::data_subpackage(std::string cmd, std::string data){
         send_json["Data"]["NumChunks"] = num_chunks;
         send_json["Data"]["CurrentBlockNum"] = i + 1;
         send_json["Data"]["Payload"] = chunk_data;
-        Socket::Instance()->sned_data_add(send_json);
+        Socket::Instance()->sned_data_add(sockfd, send_json);
     }
 }
 
@@ -80,9 +82,13 @@ void WebConnect::type_in_recv_func(json json_data){
     FaceDetection::Instance()->enroll_face(name);
 }
 
-std::string WebConnect::mat_to_buffer(const cv::Mat& img){
+void WebConnect::connect_successfly_func(int client_id){
 
-    std::vector<uchar> buf;
-    cv::imencode(".jpg", img, buf);  // 将图像编码为 JPEG 格式
-    return std::string(reinterpret_cast<char*>(buf.data()), buf.size());
+    std::vector<Backend_Info> data;
+
+    BackendSQLite::Instance()->get_all_data(data);
+    for (auto& row : data){
+        send_image(client_id, row.id, row.time, row.base64);
+    }
+    std::cout << "send sql image: " << data.size() << std::endl;
 }

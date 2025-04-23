@@ -1,9 +1,13 @@
 #include "FaceDetection.h"
 #include "File.h"
+#include "Socket.h"
 #include "TrainModel.h"
 #include "UserSQLite.h"
 #include "WebConnect.h"
+#include "BackendSQLite.h"
 #include "Task.h"
+#include "Base64.h"
+#include "LocalTime.h"
 #include "opencv2/core/mat.hpp"
 #include <cstddef>
 #include <sys/types.h>
@@ -139,7 +143,10 @@ void FaceDetection::detection_face_task(cv::Mat &frame, cv::Mat &gray, std::vect
     if (m_last_detection_label == detection_label)
         return;
     m_last_detection_label = detection_label;
-    WebConnect::Instance()->send_image(frame);
+    std::string imgBase64 = util::encodeBase64(util::mat_to_buffer(frame));
+    std::string current_time = util::LocalTime::get_cuurent_time();
+    int imageId = BackendSQLite::Instance()->insert_data(current_time, imgBase64);
+    WebConnect::Instance()->send_image(CLIENT_ALL, imageId, current_time, imgBase64);
 }
 
 void FaceDetection::frame_data_add(cv::Mat frame){

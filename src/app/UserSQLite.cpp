@@ -1,6 +1,5 @@
 #include "UserSQLite.h"
 #include "File.h"
-#include "sqlite3.h"
 
 #define SQL_FILE_PATH           (util::File::get_currentWorking_directory()+"/sql/")
 #define SQL_FILE                (SQL_FILE_PATH + "UserSQLite.db")

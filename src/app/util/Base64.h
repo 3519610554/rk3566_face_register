@@ -24,6 +24,7 @@
 
 #include <cstdint>
 #include <string>
+#include "OpencvPublic.h"
 
 namespace util {
     /**
@@ -45,5 +46,8 @@ namespace util {
      * @return 明文
      */
     std::string decodeBase64(const std::string &txt);
+
+    //照片转buffter
+    std::string mat_to_buffer(cv::Mat& img);
 }
 #endif /* AVUTIL_BASE64_H */

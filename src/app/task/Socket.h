@@ -6,13 +6,13 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <thread>
-#include <mutex>
-#include <condition_variable>
 #include <json.hpp>
-#include <atomic>
 #include <unordered_map>
+#include <vector>
 #include "SafeQueue.h"
 #include "ThreadState.h"
+
+#define CLIENT_ALL  0
 
 using json = nlohmann::json;
 
@@ -27,14 +27,18 @@ public:
     //线程启动
     void start();
     //发送数据
-    void sned_data_add(json json_data);
+    bool sned_data_add(int sockfd, json json_data);
+    //连接成功执行函数
+    void connect_sucessfly_func_bind(std::function<void(int)> func);
     //接收数据命令处理绑定函数
     void recv_cmd_func_bind(std::string cmd, std::function<void(json)> func);
 protected:
     //设置心跳包
     void set_keepalive(int keep_idle = 10, int keep_interval = 5, int keep_count = 3);
+    //客户端线程删除
+    void client_thread_erase(int client_id);
     //发送数据
-    void socket_send(json json_data);
+    void socket_send(int sockfd, json json_data);
     //读取指定字节数(阻塞)
     bool recv_exact(int sockfd, void *buffer, size_t length);
     //接收json消息
@@ -44,18 +48,14 @@ protected:
     //发送数据线程
     void send_thread();
     //接收数据线程
-    void receive_thread();
+    void receive_thread(int client_id);
 private:
     int m_sock;
-    sockaddr_in m_server_addr;
-
-    std::thread m_connect_thread;
-    std::thread m_send_thread;
-    std::thread m_receive_thread;
-
-    ThreadState m_connect_state;
-    
-    SafeQueue<json> m_send_queue;
+    sockaddr_in m_sa;
+    std::vector<std::thread> m_thread;
+    SafeQueue<std::pair<int, json>> m_send_queue;
+    std::vector<std::pair<int, std::thread>> m_client_threads;
+    std::function<void(int)> m_connect_func;
     std::unordered_map<std::string, std::function<void(json)>> m_cmd_func;
 };
 

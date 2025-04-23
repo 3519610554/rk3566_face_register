@@ -1,5 +1,6 @@
 build/
 .cache/
+.vscode/
 target/
 model/faces/
 python/venv/
