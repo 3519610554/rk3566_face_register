@@ -22,9 +22,11 @@ Socket::Socket(){
 
 Socket::~Socket(){
     
-    for (auto& client : m_client_threads){
-        close(client.first);
+    for (auto& client : m_clients){
+        shutdown(client, SHUT_RDWR);
+        close(client);
     }
+    shutdown(m_sock, SHUT_RDWR);
     close(m_sock);
 }
 
@@ -40,6 +42,7 @@ void Socket::initialize(){
     m_sock = socket(AF_INET, SOCK_STREAM, 0);
     m_sa.sin_family = AF_INET;
     m_sa.sin_port = htons(FLASK_PORT);
+    set_keepalive();
     if (bind(m_sock, (struct sockaddr*)&m_sa, sizeof(m_sa)) < 0){
         perror("bind failed");
         close(m_sock);
@@ -50,18 +53,13 @@ void Socket::initialize(){
         close(m_sock);
         return;
     }
-    set_keepalive();
-}
-
-void Socket::start(){
-
-    m_thread.push_back(std::thread(&Socket::connect_thread, this));
-    m_thread.push_back(std::thread(&Socket::send_thread, this));
+    ThreadPool::Instance()->enqueue(std::bind(&Socket::connect_thread, this));
+    ThreadPool::Instance()->enqueue(std::bind(&Socket::send_thread, this));
 }
 
 bool Socket::sned_data_add(int sockfd, json json_data){
 
-    if (m_client_threads.empty())
+    if (m_clients.empty())
         return true;
     m_send_queue.push(std::make_pair(sockfd, json_data));
     return false;
@@ -80,20 +78,21 @@ void Socket::recv_cmd_func_bind(std::string cmd, std::function<void(json)> func)
 void Socket::set_keepalive(int keep_idle, int keep_interval, int keep_count){
 
     int yes = 1;
+    int opt = 1;
+    setsockopt(m_sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
     setsockopt(m_sock, SOL_SOCKET, SO_KEEPALIVE, &yes, sizeof(yes));
     setsockopt(m_sock, IPPROTO_TCP, TCP_KEEPIDLE, &keep_idle, sizeof(keep_idle));
     setsockopt(m_sock, IPPROTO_TCP, TCP_KEEPINTVL, &keep_interval, sizeof(keep_interval));
     setsockopt(m_sock, IPPROTO_TCP, TCP_KEEPCNT, &keep_count, sizeof(keep_count));
+    
 }
 
 void Socket::client_thread_erase(int client_id){
 
-    m_client_threads.erase(
-        std::remove_if(m_client_threads.begin(), m_client_threads.end(), 
-        [client_id](const std::pair<int, std::thread>& client){
-            return client.first == client_id;
-        })   
-    );
+    auto it = std::find(m_clients.begin(), m_clients.end(), client_id);
+    if (it != m_clients.end()) {
+        m_clients.erase(it);
+    }
 }
 
 void Socket::socket_send(int sockfd, json json_data){
@@ -119,6 +118,7 @@ bool Socket::recv_exact(int sockfd, void *buffer, size_t length){
         ssize_t bytes = recv(sockfd, buf+total_received, length-total_received, 0);
         if (bytes <= 0){
             close(sockfd);
+            client_thread_erase(sockfd);
             return false;
         }
         total_received += bytes;
@@ -163,7 +163,8 @@ void Socket::connect_thread(){
         if (client_id <= 0)
             continue;
         std::cout << "successfuly to client: " << client_id << " connect!" << std::endl;
-        m_client_threads.push_back(std::make_pair(client_id, std::thread(&Socket::receive_thread, this, client_id)));
+        m_clients.push_back(client_id);
+        ThreadPool::Instance()->enqueue(&Socket::receive_thread, this, client_id);
         if (m_connect_func)
             m_connect_func(client_id);
     }
@@ -176,8 +177,8 @@ void Socket::send_thread(){
     while(Task::get_thread_state()){
         std::pair<int, json> data = m_send_queue.pop();
         if (data.first == CLIENT_ALL){
-            for (auto& client : m_client_threads){
-                socket_send(client.first, data.second);
+            for (auto& client : m_clients){
+                socket_send(client, data.second);
             }
         }else {
             socket_send(data.first, data.second);
@@ -192,13 +193,12 @@ void Socket::receive_thread(int client_id){
     while(Task::get_thread_state()){
         json recv_json;
         if (receive_json_message(client_id, recv_json))
-            break;
+            return;
         auto it = m_cmd_func.find(recv_json["Cmd"]);
         if (it != m_cmd_func.end()) {
             it->second(recv_json);
         }
         std::cout << "json: " << recv_json.dump() << std::endl;
     }
-    client_thread_erase(client_id);
 }
 

@@ -27,7 +27,7 @@ set (EXTRA_LIBS
     stdc++ dl
     -std=c++11
     -lsqlite3
-    -lcurl
+    # -lcurl
 )
 
 target_link_libraries(${FRAMEWORK_NAME}

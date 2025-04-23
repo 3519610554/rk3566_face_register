@@ -14,8 +14,6 @@ public:
     static FaceDetection* Instance();
     //初始化
     void initialize();
-    //线程启动
-    void start();
     //添加处理帧
     void frame_data_add(cv::Mat frame);
     //人脸录入
@@ -41,8 +39,6 @@ private:
     std::vector<cv::Mat> m_enroll_face_images;
     //录入标签
     std::vector<int> m_enroll_face_labels;
-    //图片处理线程
-    std::thread m_thread;
     //处理帧队列
     SafeQueue<cv::Mat> m_frame;
     //帧间隔

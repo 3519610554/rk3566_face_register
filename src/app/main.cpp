@@ -9,7 +9,7 @@
 
 int main() {
     
-    // ThreadPool::Instance()->Instance(7);
+    ThreadPool::Instance()->initialize(7);
     Task::all_thread_start();
     CameraUvc::Instance()->initialize();
     WebConnect::Instance()->initialize();
@@ -17,14 +17,8 @@ int main() {
     FaceDetection::Instance()->initialize();
     FaceTask::Instance()->initialize();
 
-    // ThreadPool::Instance()->start();
-    WebConnect::Instance()->start();
-    TrainModel::Instance()->start();
-    FaceDetection::Instance()->start();
-    FaceTask::Instance()->start();
-
-
-    FaceTask::Instance()->wait();
+    ThreadPool::Instance()->start();
+    ThreadPool::Instance()->wait();
 
     return 0;
 }

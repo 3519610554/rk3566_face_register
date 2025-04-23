@@ -49,11 +49,7 @@ void FaceDetection::initialize(){
         std::cerr << "failed to load the face detection model!" << std::endl;
         return;
     }
-}
-
-void FaceDetection::start(){
-
-    m_thread = std::thread(&FaceDetection::dispose_thread, this);
+    ThreadPool::Instance()->enqueue(&FaceDetection::dispose_thread, this);
 }
 
 size_t FaceDetection::detection_faces(cv::Mat image, std::vector<cv::Rect> &objects){

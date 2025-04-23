@@ -24,8 +24,6 @@ public:
     static Socket* Instance();
     //初始化
     void initialize();
-    //线程启动
-    void start();
     //发送数据
     bool sned_data_add(int sockfd, json json_data);
     //连接成功执行函数
@@ -52,9 +50,8 @@ protected:
 private:
     int m_sock;
     sockaddr_in m_sa;
-    std::vector<std::thread> m_thread;
     SafeQueue<std::pair<int, json>> m_send_queue;
-    std::vector<std::pair<int, std::thread>> m_client_threads;
+    std::vector<int> m_clients;
     std::function<void(int)> m_connect_func;
     std::unordered_map<std::string, std::function<void(json)>> m_cmd_func;
 };

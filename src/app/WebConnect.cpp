@@ -18,13 +18,14 @@ WebConnect::WebConnect(){
         [this](int client_id) {this->connect_successfly_func(client_id);});
     Socket::Instance()->recv_cmd_func_bind("TypeIn", 
         [this](json json_data) { this->type_in_recv_func(json_data); });
+    Socket::Instance()->recv_cmd_func_bind("DeleteImage", 
+        [this](json json_data) { this->delete_image_recv_func(json_data); });
 }
 
 WebConnect::~WebConnect(){
 
     
 }
-
 
 WebConnect* WebConnect::Instance(){
 
@@ -37,11 +38,6 @@ void WebConnect::initialize(){
 
     Socket::Instance()->initialize();
     
-}
-
-void WebConnect::start(){
-
-    Socket::Instance()->start();
 }
 
 void WebConnect::send_image(int sockfd, int id, std::string time, std::string imageBase64){
@@ -76,12 +72,6 @@ void WebConnect::data_subpackage(int sockfd, std::string cmd, std::string data){
     }
 }
 
-void WebConnect::type_in_recv_func(json json_data){
-
-    std::string name = json_data["Data"]["Name"];
-    FaceDetection::Instance()->enroll_face(name);
-}
-
 void WebConnect::connect_successfly_func(int client_id){
 
     std::vector<Backend_Info> data;
@@ -91,4 +81,17 @@ void WebConnect::connect_successfly_func(int client_id){
         send_image(client_id, row.id, row.time, row.base64);
     }
     std::cout << "send sql image: " << data.size() << std::endl;
+}
+
+void WebConnect::type_in_recv_func(json json_data){
+
+    std::string name = json_data["Data"]["Name"];
+    FaceDetection::Instance()->enroll_face(name);
+}
+
+void WebConnect::delete_image_recv_func(json json_data){
+
+    int image_id = json_data["Data"]["Id"];
+    BackendSQLite::Instance()->delete_by_id(image_id);
+    std::cout << "删除照片id: " << image_id << std::endl;
 }

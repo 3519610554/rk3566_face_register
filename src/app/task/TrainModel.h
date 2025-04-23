@@ -19,8 +19,6 @@ public:
     static TrainModel* Instance();
     //初始化
     void initialize();
-    //线程启动
-    void start();
     //训练模型
     void train_model();
     //模型图片大小修正
@@ -33,7 +31,6 @@ private:
     cv::FileStorage m_fs;
     // cv::Ptr<cv::face::EigenFaceRecognizer> m_model;
     cv::Ptr<MPDEL_TRAIN_METHODS> m_model;
-    std::thread m_thread;
     std::atomic<bool> m_model_state;
     SafeQueue<std::pair<std::vector<cv::Mat>, std::vector<int>>> m_queue; 
 };

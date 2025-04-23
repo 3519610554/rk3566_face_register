@@ -1,14 +1,16 @@
 #pragma once
 
 #include <cstddef>
+#include <memory>
 #include <thread>
+#include <utility>
 #include <vector>
 #include <queue>
 #include <atomic>
 #include <mutex>
 #include <condition_variable>
 #include <functional>
-#include "SafeQueue.h"
+#include <future>
 
 class Task{
 public:
@@ -48,7 +50,7 @@ public:
     }
     //线程开始
     void start(){
-        for (size_t i; i < m_num_threads; i ++){
+        for (size_t i = 0; i < m_num_threads; i ++){
             m_workers.emplace_back([this](){
                 while(true){
                     std::function<void()> task;
@@ -66,11 +68,19 @@ public:
             });
         }
     }
+    //等待线程
+    void wait(){
+        while(!m_stop_flag);
+    }
     //添加任务
-    void enqueue(std::function<void()> func){
+    template <typename F, typename... Args>
+    void enqueue(F&& f, Args&&... args){
+        auto task = std::make_shared<std::packaged_task<void()>>(
+            std::bind(std::forward<F>(f), std::forward<Args>(args)...)
+        );
         {
             std::unique_lock<std::mutex> lock(m_queue_mutex);
-            m_tasks.push(std::move(func));
+            m_tasks.push([task]() {(*task)(); });
         }
         m_cond.notify_one();
     }

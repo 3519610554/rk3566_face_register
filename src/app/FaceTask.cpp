@@ -16,18 +16,7 @@ FaceTask::~FaceTask(){
 
 void FaceTask::initialize(){
 
-    
-}
-
-void FaceTask::start(){
-
-    m_thread = std::thread(&FaceTask::run, this);
-}  
-
-void FaceTask::wait(){
-    if (m_thread.joinable()) {
-        m_thread.join(); 
-    }
+    ThreadPool::Instance()->enqueue(std::bind(&FaceTask::run, this));
 }
 
 void FaceTask::run(){

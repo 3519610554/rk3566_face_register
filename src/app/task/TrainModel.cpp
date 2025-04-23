@@ -42,11 +42,7 @@ void TrainModel::initialize(){
     }else {
         m_model_state.store(false);
     }
-}
-
-void TrainModel::start(){
-
-    m_thread = std::thread(&TrainModel::train_model, this);
+    ThreadPool::Instance()->enqueue(&TrainModel::train_model, this);
 }
 
 void TrainModel::train_model(){

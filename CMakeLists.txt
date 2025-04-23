@@ -44,7 +44,7 @@ if(OpenMP_CXX_FOUND OR OPENMP_FOUND)
 endif()
 
 #curl
-include_directories(${CMAKE_INSTALL_PREFIX}/include/curl)
+# include_directories(${CMAKE_INSTALL_PREFIX}/include/curl)
 
 message(STATUS ${CMAKE_CURRENT_SOURCE_DIR})
 
