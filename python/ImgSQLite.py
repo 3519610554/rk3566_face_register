@@ -56,3 +56,16 @@ class ImgSQLite:
         conn.close()
         rows.reverse()
         return rows
+    
+    def get_all_id(self):
+        id_list = []
+        conn = sqlite3.connect(image_sqlite)
+        cursor = conn.cursor()
+        cursor.execute("SELECT id FROM images")
+        rows = cursor.fetchall()
+        conn.close()
+        rows.reverse()
+        for id in rows:
+            id_list.append(id[0])
+        # print(f"rows: {id_list}")
+        return id_list

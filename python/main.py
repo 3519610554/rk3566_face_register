@@ -10,8 +10,8 @@ class FlaskApp:
         self.app = Flask(__name__)
         self.app.config.from_object(Config)  
         self.socketio = SocketIO(self.app, async_mode='eventlet')
-        self.server_socket = Socket()
         self.images_sqlite = ImgSQLite()
+        self.server_socket = Socket()
         self.client_connect = ClientConnect(self.app, self.socketio, self.server_socket, self.images_sqlite)
         self._register_routes()
     

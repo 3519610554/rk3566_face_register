@@ -9,15 +9,13 @@
 #include <cstdio>
 #include <netinet/tcp.h> 
 #include "Task.h"
+#include "HashBase62.h"
 
-// #define FLASK_HOST                  "10.34.4.112"
-// #define FLASK_PORT                  8080
-
-#define FLASK_HOST                  "10.34.53.17"
-#define FLASK_PORT                  8080
+#define LOCAL_PORT                  8080
+#define CHUNK_SIZE                  512
 
 Socket::Socket(){
-
+    
 }
 
 Socket::~Socket(){
@@ -41,7 +39,7 @@ void Socket::initialize(){
 
     m_sock = socket(AF_INET, SOCK_STREAM, 0);
     m_sa.sin_family = AF_INET;
-    m_sa.sin_port = htons(FLASK_PORT);
+    m_sa.sin_port = htons(LOCAL_PORT);
     set_keepalive();
     if (bind(m_sock, (struct sockaddr*)&m_sa, sizeof(m_sa)) < 0){
         perror("bind failed");
@@ -65,12 +63,36 @@ bool Socket::sned_data_add(int sockfd, json json_data){
     return false;
 }
 
+void Socket::data_subpackage(int sockfd, json data){
+
+    std::string json_str = data.dump();
+    size_t total_size = json_str.size();
+    size_t chunk_size = CHUNK_SIZE;
+    size_t num_chunks = (total_size + chunk_size - 1) / chunk_size;
+    std::string hash_base62 = util::generateTimeHashString();
+
+    std::cout << "send hash: " << hash_base62 << std::endl;
+
+    for (size_t i = 0; i < num_chunks; i ++){
+        json send_json;
+        size_t offset = i * chunk_size;
+        size_t current_chunk_size = std::min(chunk_size, total_size - offset);
+        std::string chunk_data = json_str.substr(offset, current_chunk_size);
+
+        send_json["Hash"] = hash_base62;
+        send_json["NumChunks"] = num_chunks;
+        send_json["CurrentBlockNum"] = i + 1;
+        send_json["Payload"] = chunk_data;
+        sned_data_add(sockfd, send_json);
+    }
+}
+
 void Socket::connect_sucessfly_func_bind(std::function<void(int)> func){
 
     m_connect_func = func;
 }
 
-void Socket::recv_cmd_func_bind(std::string cmd, std::function<void(json)> func){
+void Socket::recv_cmd_func_bind(std::string cmd, std::function<void(int, json)> func){
 
     m_cmd_func[cmd] = func;
 }
@@ -119,26 +141,26 @@ bool Socket::recv_exact(int sockfd, void *buffer, size_t length){
         if (bytes <= 0){
             close(sockfd);
             client_thread_erase(sockfd);
-            return false;
+            return true;
         }
         total_received += bytes;
     }
 
-    return true;
+    return false;
 }
 
 bool Socket::receive_json_message(int sockfd, json &out_json){
 
     uint32_t len_net = 0;
     
-    if (!recv_exact(sockfd, &len_net, sizeof(len_net))){
+    if (recv_exact(sockfd, &len_net, sizeof(len_net))){
         std::cerr << "failed to read length." << std::endl;
         return true;
     }
 
     uint32_t msg_len = ntohl(len_net);
     std::vector<char> buffer(msg_len);
-    if (!recv_exact(sockfd, buffer.data(), msg_len)){
+    if (recv_exact(sockfd, buffer.data(), msg_len)){
         std::cerr << "failed to read full JSON message." << std::endl;
         return true;
     }
@@ -152,6 +174,30 @@ bool Socket::receive_json_message(int sockfd, json &out_json){
     }
 
     return false;
+}
+
+void Socket::receive_json_unpack(int sockfd, json recv_json){
+    std::string hash_str = recv_json["Hash"];
+    std::string payload = recv_json["Payload"];
+    int num_chunks = recv_json["NumChunks"];
+    int current_block_num = recv_json["CurrentBlockNum"];
+
+    if (m_recv_dict_buff.find(hash_str) == m_recv_dict_buff.end()){
+        std::cout << "recv hash: " << hash_str << std::endl;
+        m_recv_dict_buff[hash_str] = "";
+    }
+
+    m_recv_dict_buff[hash_str] += payload;
+    // std::cout << "json_recv: " << recv_json.dump() << std::endl;
+    if (num_chunks != current_block_num)
+        return;
+    json json_obj = json::parse(m_recv_dict_buff[hash_str]);
+    m_recv_dict_buff.erase(hash_str);
+    // std::cout << "json: " << json_obj.dump() << std::endl;
+    auto it = m_cmd_func.find(json_obj["Cmd"]);
+    if (it != m_cmd_func.end()) {
+        it->second(sockfd, json_obj);
+    }
 }
 
 void Socket::connect_thread(){
@@ -194,11 +240,6 @@ void Socket::receive_thread(int client_id){
         json recv_json;
         if (receive_json_message(client_id, recv_json))
             return;
-        auto it = m_cmd_func.find(recv_json["Cmd"]);
-        if (it != m_cmd_func.end()) {
-            it->second(recv_json);
-        }
-        std::cout << "json: " << recv_json.dump() << std::endl;
+        receive_json_unpack(client_id, recv_json);
     }
 }
-

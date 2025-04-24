@@ -83,6 +83,30 @@ int BackendSQLite::get_row_count(){
     return count;
 }
 
+bool BackendSQLite::get_data_by_id(int target_id, Backend_Info &info){
+
+    open_sqlite();
+
+    std::string sql = "SELECT id, time, base64 FROM images WHERE id = ?;";
+    int rc = sqlite3_prepare_v2(m_db, sql.c_str(), -1, &m_stmt, nullptr);
+    if (rc != SQLITE_OK) {
+        std::cerr << "failed to prepare statement: " << sqlite3_errmsg(m_db) << std::endl;
+        close_sqlite();
+        return false;
+    }
+    sqlite3_bind_int(m_stmt, 1, target_id);
+    bool state = false;
+    if (sqlite3_step(m_stmt) == SQLITE_ROW) {
+        info.id = sqlite3_column_int(m_stmt, 0);
+        info.time = reinterpret_cast<const char*>(sqlite3_column_text(m_stmt, 1));
+        info.base64 = reinterpret_cast<const char*>(sqlite3_column_text(m_stmt, 2));
+
+        state = true;
+    }
+    clean_resource();
+    return state;
+}
+
 void BackendSQLite::get_all_data(std::vector<Backend_Info> &data){
     
     open_sqlite();
@@ -105,7 +129,7 @@ void BackendSQLite::get_all_data(std::vector<Backend_Info> &data){
     std::reverse(data.begin(), data.end());
 }
 
-void BackendSQLite::get_all_id(std::vector<int> id_data){
+void BackendSQLite::get_all_id(std::vector<int> &id_data){
 
     open_sqlite();
     std::string sql = "SELECT id FROM images;";
@@ -117,7 +141,6 @@ void BackendSQLite::get_all_id(std::vector<int> id_data){
     }
     while (sqlite3_step(m_stmt) == SQLITE_ROW){
         int id = sqlite3_column_int(m_stmt, 0);
-        
         id_data.push_back(id);
     }
     clean_resource();

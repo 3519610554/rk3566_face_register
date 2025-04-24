@@ -16,17 +16,15 @@ public:
     void send_image(int sockfd, int id, std::string time, std::string imageBase64);
     //发送id
     void send_image_id(int sockfd, json id_arr);
-    //数据分包
-    void data_subpackage(int sockfd, std::string cmd, std::string data);
 protected:
-    //照片转buffter
-    std::string mat_to_buffer(const cv::Mat& img);
     //连接执行函数
     void connect_successfly_func(int client_id);
     //录入人脸命令
-    void type_in_recv_func(json json_data);
+    void type_in_recv_func(int sockfd, json json_data);
     //删除上传照片
-    void delete_image_recv_func(json json_data);
+    void delete_image_recv_func(int sockfd, json json_data);
+    //发送需要同步的照片
+    void need_image_id_func(int sockfd, json json_data);
 private:
 };
 

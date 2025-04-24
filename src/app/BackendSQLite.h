@@ -22,10 +22,12 @@ public:
     void delete_by_id(int id);
     //获取数据长度
     int get_row_count();
+    //获取指定数据
+    bool get_data_by_id(int target_id, Backend_Info &info);
     //获取全部数据
     void get_all_data(std::vector<Backend_Info> &data);
     //获取全部id
-    void get_all_id(std::vector<int> id_data);
+    void get_all_id(std::vector<int> &id_data);
 protected:
     //打开数据库
     void open_sqlite();

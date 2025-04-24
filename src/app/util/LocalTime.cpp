@@ -4,7 +4,10 @@
 #include <iomanip>
 #include <sstream>
 
-long long util::LocalTime::get_cuurent_timestamp(){
+
+namespace util{
+
+long long LocalTime::get_cuurent_timestamp(){
 
     auto now = std::chrono::system_clock::now();
     
@@ -12,6 +15,14 @@ long long util::LocalTime::get_cuurent_timestamp(){
     auto timestamp = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
 
     return timestamp;
+} 
+
+long long LocalTime::get_cuurent_timestamp_ms(){
+
+    auto now = std::chrono::system_clock::now();
+    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+
+    return millis;
 }
 
 std::string util::LocalTime::get_cuurent_time(){
@@ -23,4 +34,5 @@ std::string util::LocalTime::get_cuurent_time(){
     oss << std::put_time(local_tm, "%Y-%m-%d %H:%M:%S");
 
     return oss.str();
+}
 }

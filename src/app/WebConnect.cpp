@@ -17,9 +17,11 @@ WebConnect::WebConnect(){
     Socket::Instance()->connect_sucessfly_func_bind(
         [this](int client_id) {this->connect_successfly_func(client_id);});
     Socket::Instance()->recv_cmd_func_bind("TypeIn", 
-        [this](json json_data) { this->type_in_recv_func(json_data); });
+        [this](int sockfd, json json_data) { this->type_in_recv_func(sockfd, json_data); });
     Socket::Instance()->recv_cmd_func_bind("DeleteImage", 
-        [this](json json_data) { this->delete_image_recv_func(json_data); });
+        [this](int sockfd, json json_data) { this->delete_image_recv_func(sockfd, json_data); });
+    Socket::Instance()->recv_cmd_func_bind("NeedImageId", 
+        [this](int sockfd, json json_data) { this->need_image_id_func(sockfd, json_data); });
 }
 
 WebConnect::~WebConnect(){
@@ -43,42 +45,23 @@ void WebConnect::initialize(){
 void WebConnect::send_image(int sockfd, int id, std::string time, std::string imageBase64){
         
     json json_data;
+    json_data["Cmd"] = "Upload";
     json_data["Id"] = id;
     json_data["Time"] = time;
     json_data["ImgBase64"] = imageBase64;
     std::string json_str = json_data.dump();
 
-    data_subpackage(sockfd, "upload", json_str);
+    Socket::Instance()->data_subpackage(sockfd, json_data);
     std::cout << "send image" << std::endl;
 }
 
 void WebConnect::send_image_id(int sockfd, json id_arr){
 
     json json_data;
+    json_data["Cmd"] = "UploadId";
     json_data["Id"] = id_arr;
-    std::string json_str = json_data.dump();
-    data_subpackage(sockfd, "UploadId", json_str);
+    Socket::Instance()->data_subpackage(sockfd, json_data);
     std::cout << "send all id" << std::endl;
-}
-
-void WebConnect::data_subpackage(int sockfd, std::string cmd, std::string data){
-
-    size_t total_size = data.size();
-    size_t chunk_size = CHUNK_SIZE;
-    size_t num_chunks = (total_size + chunk_size - 1) / chunk_size;
-
-    for (size_t i = 0; i < num_chunks; i ++){
-        json send_json;
-        size_t offset = i * chunk_size;
-        size_t current_chunk_size = std::min(chunk_size, total_size - offset);
-        std::string chunk_data = data.substr(offset, current_chunk_size);
-
-        send_json["Cmd"] = cmd;
-        send_json["Data"]["NumChunks"] = num_chunks;
-        send_json["Data"]["CurrentBlockNum"] = i + 1;
-        send_json["Data"]["Payload"] = chunk_data;
-        Socket::Instance()->sned_data_add(sockfd, send_json);
-    }
 }
 
 void WebConnect::connect_successfly_func(int client_id){
@@ -100,15 +83,27 @@ void WebConnect::connect_successfly_func(int client_id){
     std::cout << "send sql image: " << id_data.size() << std::endl;
 }
 
-void WebConnect::type_in_recv_func(json json_data){
+void WebConnect::type_in_recv_func(int sockfd, json json_data){
 
-    std::string name = json_data["Data"]["Name"];
+    std::string name = json_data["Name"];
     FaceDetection::Instance()->enroll_face(name);
 }
 
-void WebConnect::delete_image_recv_func(json json_data){
+void WebConnect::delete_image_recv_func(int sockfd, json json_data){
 
-    int image_id = json_data["Data"]["Id"];
+    int image_id = json_data["Id"];
     BackendSQLite::Instance()->delete_by_id(image_id);
-    std::cout << "删除照片id: " << image_id << std::endl;
+    std::cout << "delete image id: " << image_id << std::endl;
+}
+
+void WebConnect::need_image_id_func(int sockfd, json json_data){
+
+    // int image_id = json_data["Id"];
+    std::cout << "photos that need to be synchronized: " << json_data["Id"] << std::endl;
+    for (auto &item : json_data["Id"]){
+        Backend_Info data;
+        if (!BackendSQLite::Instance()->get_data_by_id(item, data))
+            continue;
+        send_image(sockfd, data.id, data.time, data.base64);
+    }
 }

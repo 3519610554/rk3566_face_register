@@ -5,28 +5,33 @@ import json
 import threading
 import queue
 import time
+from Util import *
+
+CHUNK_SIZE = 512
 
 class Socket:
     def __init__(self, host='10.34.4.112', port=8080):
         self.__host = host
         self.__port = port 
         self.__m_send_queue = queue.Queue()
-        self.__m_recv_queue = queue.Queue()
         self.__m_connect_state = False
         self.__m_mutex_connect = threading.Lock()
         self.__m_cv_connect = threading.Condition(self.__m_mutex_connect)
         self.__m_cmd_func = {}
+        self.__m_recv_dict_buff = {}
 
         self.__m_connect_thread = threading.Thread(target=self._connect_thread)
         self.__m_send_thread = threading.Thread(target=self._send_thread)
         self.__m_recv_thread = threading.Thread(target=self._recv_thread)
-
-        self.__m_connect_thread.start()
-        self.__m_send_thread.start()
-        self.__m_recv_thread.start()
     
     def __del__(self):
         self.__m_sock.close()
+
+    #线程启动
+    def start(self):
+        self.__m_connect_thread.start()
+        self.__m_send_thread.start()
+        self.__m_recv_thread.start()
 
     #等待 __m_connect_state 为false
     def wait_for_connect_state_false(self):
@@ -98,6 +103,21 @@ class Socket:
             except Exception as e:
                 self.__m_sock.close()
                 time.sleep(10)
+    
+    #数据解包
+    def _data_unpack(self, json_data):
+        hash_str = json_data["Hash"]
+        if hash_str not in self.__m_recv_dict_buff:
+            print(f"recv hash: {hash_str}")
+            self.__m_recv_dict_buff[hash_str] = ""
+        self.__m_recv_dict_buff[hash_str] += json_data["Payload"]
+        if json_data["NumChunks"] == json_data["CurrentBlockNum"]:
+            json_obj = json.loads(self.__m_recv_dict_buff[hash_str])
+            del self.__m_recv_dict_buff[hash_str]
+            # print(f"recv json: {json_obj}")
+            if json_obj["Cmd"] in self.__m_cmd_func:
+                self.__m_cmd_func[json_obj["Cmd"]](json_obj)
+            
 
     def _send_thread(self):
 
@@ -115,9 +135,30 @@ class Socket:
         while True:
             self.wait_for_connect_state_true()
             state, json_data = self._recv_json_message(self.__m_sock)
-            if state and (json_data["Cmd"] in self.__m_cmd_func):
-                self.__m_cmd_func[json_data["Cmd"]](json_data)
+            if state:
+                self._data_unpack(json_data)
             # print(f"recv json: {json_data}")
+
+    #数据分包发送
+    def data_subpackage(self, data:json):
+        json_str = json.dumps(data)
+        total_size = len(json_str)
+        chunk_size = CHUNK_SIZE
+        num_chunks = int((total_size + chunk_size - 1) / chunk_size)
+        hash_base62 = generate_time_hash_string()
+
+        print(f"send hash: {hash_base62}")
+
+        for i in range(num_chunks):
+            send_json = {}
+            offset = i * chunk_size
+            current_chunk_size = min(chunk_size, total_size - offset)
+            chunk_data = json_str[offset:current_chunk_size]
+            send_json["Hash"] = hash_base62
+            send_json["NumChunks"] = num_chunks
+            send_json["CurrentBlockNum"] = i+1
+            send_json["Payload"] = chunk_data
+            self.send_data_add(send_json)
 
     def send_data_add(self, json_data):
         self.__m_send_queue.put(json_data)

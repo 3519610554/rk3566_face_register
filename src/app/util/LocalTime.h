@@ -8,6 +8,8 @@ class LocalTime{
 public:
     //获取当前时间戳
     static long long get_cuurent_timestamp();
+    //获取时间戳 ms
+    static long long get_cuurent_timestamp_ms();
     //获取当前时间
     static std::string get_cuurent_time();
 };
