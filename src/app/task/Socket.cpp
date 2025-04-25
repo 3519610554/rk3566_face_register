@@ -9,7 +9,7 @@
 #include <cstdio>
 #include <netinet/tcp.h> 
 #include <spdlog/spdlog.h>
-#include "Task.h"
+#include "ThreadPool.h"
 #include "HashBase62.h"
 
 #define LOCAL_PORT                  8080
@@ -205,7 +205,7 @@ void Socket::connect_thread(){
 
     spdlog::info("connect thread started");
 
-    while(Task::get_thread_state()){
+    while(ThreadPool::Instance()->get_thread_state()){
         int client_id = accept(m_sock, nullptr, nullptr);
         if (client_id <= 0)
             continue;
@@ -221,7 +221,7 @@ void Socket::send_thread(){
 
     spdlog::info("server web send data thread started");
 
-    while(Task::get_thread_state()){
+    while(ThreadPool::Instance()->get_thread_state()){
         std::pair<int, json> data = m_send_queue.pop();
         if (data.first == CLIENT_ALL){
             for (auto& client : m_clients){
@@ -237,7 +237,7 @@ void Socket::receive_thread(int client_id){
 
     spdlog::info("{} receive thread started!", client_id);
 
-    while(Task::get_thread_state()){
+    while(ThreadPool::Instance()->get_thread_state()){
         json recv_json;
         if (receive_json_message(client_id, recv_json))
             return;

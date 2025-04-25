@@ -2,7 +2,7 @@
 #include "CameraUvc.h"
 #include "FaceDetection.h"
 #include "WebConnect.h"
-#include "Task.h"
+#include "ThreadPool.h"
 #include <spdlog/spdlog.h>
 
 FaceTask::FaceTask(){
@@ -35,5 +35,4 @@ void FaceTask::run(){
         }         
         FaceDetection::Instance()->frame_data_add(frame);
     }
-    Task::all_thread_stop();
 }

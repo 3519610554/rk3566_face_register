@@ -79,7 +79,7 @@ class ClientConnect:
         id_list = json_data["Id"]
         local_id = self.m_sqlite.get_all_id()
         missing = list(set(id_list) - set(local_id))
-        missing.sort(reverse=True)
+        missing.sort()
         if len(missing) == 0:
             return
         self.send_need_image_id(missing)

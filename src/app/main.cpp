@@ -1,5 +1,5 @@
 #include <iostream>
-#include "Task.h"
+#include "ThreadPool.h"
 #include "CameraUvc.h"
 #include "TrainModel.h"
 #include "FaceDetection.h"
@@ -9,7 +9,6 @@
 int main() {
     
     ThreadPool::Instance()->initialize(8);
-    Task::all_thread_start();
     CameraUvc::Instance()->initialize();
     WebConnect::Instance()->initialize();
     TrainModel::Instance()->initialize();

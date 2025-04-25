@@ -88,6 +88,7 @@ function image_show(){
 
         // 将卡片添加到容器中
         container.appendChild(card);
+        // container.insertBefore(card, container.firstChild);
     });
 }
 

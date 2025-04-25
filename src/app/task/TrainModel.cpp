@@ -1,6 +1,6 @@
 #include "TrainModel.h"
 #include "File.h"
-#include "Task.h"
+#include "ThreadPool.h"
 #include <thread>
 #include <utility>
 #include <chrono> 
@@ -48,7 +48,7 @@ void TrainModel::initialize(){
 
 void TrainModel::train_model(){
 
-    while(Task::get_thread_state()){
+    while(ThreadPool::Instance()->get_thread_state()){
         std::vector<cv::Mat> face_images;
         std::vector<int> face_labels;
         std::pair<std::vector<cv::Mat>, std::vector<int>> data = m_queue.pop();

@@ -12,16 +12,6 @@
 #include <functional>
 #include <future>
 
-class Task{
-public:
-    static void all_thread_stop();
-    static void all_thread_start();
-    static bool get_thread_state();
-
-private:
-    static std::atomic<bool> m_running;
-};
-
 class ThreadPool{
 public:
     ThreadPool() : m_stop_flag(false){}
@@ -83,6 +73,9 @@ public:
             m_tasks.push([task]() {(*task)(); });
         }
         m_cond.notify_one();
+    }
+    bool get_thread_state(){
+        return !m_stop_flag.load();
     }
 private:
     std::vector<std::thread> m_workers;
