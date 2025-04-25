@@ -2,8 +2,9 @@
 #include "File.h"
 #include "sqlite3.h"
 #include <algorithm>
+#include <spdlog/spdlog.h>
 
-#define SQL_FILE_PATH           (util::File::get_currentWorking_directory()+"/sql/")
+#define SQL_FILE_PATH           (util::get_currentWorking_directory()+"/sql/")
 #define SQL_FILE                (SQL_FILE_PATH + "BackendSQLite.db")
 
 BackendSQLite* BackendSQLite::Instance(){
@@ -20,7 +21,7 @@ int BackendSQLite::insert_data(std::string time, std::string base64){
 
     int rc = sqlite3_prepare_v2(m_db, sql.c_str(), -1, &m_stmt, nullptr);
     if (rc != SQLITE_OK) {
-        std::cerr << "failed to prepare statement: " << sqlite3_errmsg(m_db) << std::endl;
+        spdlog::error("failed to prepare statement: {}", sqlite3_errmsg(m_db));
         close_sqlite();
         return 0;
     }
@@ -32,7 +33,7 @@ int BackendSQLite::insert_data(std::string time, std::string base64){
 
     sqlite3_int64 row_id = 0;
     if (rc != SQLITE_DONE){
-        std::cerr << "execution failed: " << sqlite3_errmsg(m_db) << std::endl;
+        spdlog::error("execution failed: {}", sqlite3_errmsg(m_db));
     }else {
         row_id = sqlite3_last_insert_rowid(m_db);
     }
@@ -48,7 +49,7 @@ void BackendSQLite::delete_by_id(int id){
     std::string sql = "DELETE FROM images WHERE id = ?;";
     int rc = sqlite3_prepare_v2(m_db, sql.c_str(), -1, &m_stmt, nullptr);
     if (rc != SQLITE_OK) {
-        std::cerr << "failed to prepare statement: " << sqlite3_errmsg(m_db) << std::endl;
+        spdlog::error("failed to prepare statement: {}", sqlite3_errmsg(m_db));
         close_sqlite();
         return;
     }
@@ -56,7 +57,7 @@ void BackendSQLite::delete_by_id(int id){
     sqlite3_bind_int(m_stmt, 1, id);
     rc = sqlite3_step(m_stmt);
     if (rc != SQLITE_DONE){
-        std::cerr << "execution failed: " << sqlite3_errmsg(m_db) << std::endl;
+        spdlog::error("execution failed: {}", sqlite3_errmsg(m_db));
     }
 
     clean_resource();
@@ -69,7 +70,7 @@ int BackendSQLite::get_row_count(){
 
     int rc = sqlite3_prepare_v2(m_db, sql.c_str(), -1, &m_stmt, nullptr);
     if (rc != SQLITE_OK) {
-        std::cerr << "failed to prepare statement: " << sqlite3_errmsg(m_db) << std::endl;
+        spdlog::error("failed to prepare statement: {}", sqlite3_errmsg(m_db));
         close_sqlite();
         return 0;
     }
@@ -90,7 +91,7 @@ bool BackendSQLite::get_data_by_id(int target_id, Backend_Info &info){
     std::string sql = "SELECT id, time, base64 FROM images WHERE id = ?;";
     int rc = sqlite3_prepare_v2(m_db, sql.c_str(), -1, &m_stmt, nullptr);
     if (rc != SQLITE_OK) {
-        std::cerr << "failed to prepare statement: " << sqlite3_errmsg(m_db) << std::endl;
+        spdlog::error("failed to prepare statement: {}", sqlite3_errmsg(m_db));
         close_sqlite();
         return false;
     }
@@ -113,7 +114,7 @@ void BackendSQLite::get_all_data(std::vector<Backend_Info> &data){
     std::string sql = "SELECT id, time, base64 FROM images;";
     int rc = sqlite3_prepare_v2(m_db, sql.c_str(), -1, &m_stmt, nullptr);
     if (rc != SQLITE_OK) {
-        std::cerr << "failed to prepare statement: " << sqlite3_errmsg(m_db) << std::endl;
+        spdlog::error("failed to prepare statement: {}", sqlite3_errmsg(m_db));
         close_sqlite();
         return;
     }
@@ -135,7 +136,7 @@ void BackendSQLite::get_all_id(std::vector<int> &id_data){
     std::string sql = "SELECT id FROM images;";
     int rc = sqlite3_prepare_v2(m_db, sql.c_str(), -1, &m_stmt, nullptr);
     if (rc != SQLITE_OK) {
-        std::cerr << "failed to prepare statement: " << sqlite3_errmsg(m_db) << std::endl;
+        spdlog::error("failed to prepare statement: {}", sqlite3_errmsg(m_db));
         close_sqlite();
         return;
     }
@@ -149,10 +150,10 @@ void BackendSQLite::get_all_id(std::vector<int> &id_data){
 
 void BackendSQLite::open_sqlite(){
 
-    util::File::create_file(SQL_FILE_PATH.c_str(), nullptr);
+    util::create_file(SQL_FILE_PATH.c_str(), nullptr);
     int rc = sqlite3_open(SQL_FILE.c_str(), &m_db);
     if (rc){
-        std::cerr << "cannot open sqlite: " << rc << std::endl;
+        spdlog::error("cannot open sqlite: {}", rc);
         return;
     }
     if (m_table_flag)
@@ -160,7 +161,7 @@ void BackendSQLite::open_sqlite(){
     const char* sql_create_table = "CREATE TABLE IF NOT EXISTS images (id INTEGER PRIMARY KEY, time TEXT, base64 TEXT);";
     rc = sqlite3_exec(m_db, sql_create_table, nullptr, nullptr, &m_errmsg);
     if (rc) {
-        std::cerr << "create table failed: " << sqlite3_errmsg(m_db) << std::endl;
+        spdlog::error("create table failed: {}", sqlite3_errmsg(m_db));
         return;
     }
     m_table_flag = true;

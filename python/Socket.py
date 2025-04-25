@@ -5,7 +5,14 @@ import json
 import threading
 import queue
 import time
+import logging
 from Util import *
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
 
 CHUNK_SIZE = 512
 
@@ -99,7 +106,7 @@ class Socket:
                 self.__m_sock.connect((self.__host, self.__port))
                 self.set_keepalive(self.__m_sock)
                 self.set_connect_state_and_notify(True)
-                print("successfuly to C++ connect!")
+                logging.info("successfuly to C++ connect!")
             except Exception as e:
                 self.__m_sock.close()
                 time.sleep(10)
@@ -108,7 +115,7 @@ class Socket:
     def _data_unpack(self, json_data):
         hash_str = json_data["Hash"]
         if hash_str not in self.__m_recv_dict_buff:
-            print(f"recv hash: {hash_str}")
+            logging.info(f"recv hash: {hash_str}")
             self.__m_recv_dict_buff[hash_str] = ""
         self.__m_recv_dict_buff[hash_str] += json_data["Payload"]
         if json_data["NumChunks"] == json_data["CurrentBlockNum"]:
@@ -121,7 +128,7 @@ class Socket:
 
     def _send_thread(self):
 
-        print("socket send thread start successfuly!")
+        logging.info("socket send thread start successfuly!")
 
         while True:
             self.wait_for_connect_state_true()
@@ -130,7 +137,7 @@ class Socket:
                 
     def _recv_thread(self):
 
-        print("socket recv thread start successfuly!")
+        logging.info("socket recv thread start successfuly!")
 
         while True:
             self.wait_for_connect_state_true()
@@ -147,7 +154,7 @@ class Socket:
         num_chunks = int((total_size + chunk_size - 1) / chunk_size)
         hash_base62 = generate_time_hash_string()
 
-        print(f"send hash: {hash_base62}")
+        logging.info(f"send hash: {hash_base62}")
 
         for i in range(num_chunks):
             send_json = {}

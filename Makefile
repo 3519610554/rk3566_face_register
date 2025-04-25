@@ -67,3 +67,7 @@ libcurl:
 json:
 	wget https://github.com/nlohmann/json/releases/download/v3.12.0/json.hpp -P ${INSTALL_DIR}/include
 	
+spdlog:
+	@[ ! -d ${BUILD_DIR}/spdlog ] && git clone https://github.com/gabime/spdlog.git --depth=1 ${BUILD_DIR}/spdlog || echo "spdlog source ready..."
+	
+	cp -r ${BUILD_DIR}/spdlog/include/spdlog ${INSTALL_DIR}/include

@@ -8,6 +8,7 @@
 #include <chrono> 
 #include <cstdio>
 #include <netinet/tcp.h> 
+#include <spdlog/spdlog.h>
 #include "Task.h"
 #include "HashBase62.h"
 
@@ -42,12 +43,12 @@ void Socket::initialize(){
     m_sa.sin_port = htons(LOCAL_PORT);
     set_keepalive();
     if (bind(m_sock, (struct sockaddr*)&m_sa, sizeof(m_sa)) < 0){
-        perror("bind failed");
+        spdlog::error("bind failed");
         close(m_sock);
         return;
     }
     if (listen(m_sock, 2) < 0){
-        perror("listen failed");
+        spdlog::error("listen failed");
         close(m_sock);
         return;
     }
@@ -71,7 +72,7 @@ void Socket::data_subpackage(int sockfd, json data){
     size_t num_chunks = (total_size + chunk_size - 1) / chunk_size;
     std::string hash_base62 = util::generateTimeHashString();
 
-    std::cout << "send hash: " << hash_base62 << std::endl;
+    spdlog::info("send hash: {}", hash_base62);
 
     for (size_t i = 0; i < num_chunks; i ++){
         json send_json;
@@ -154,14 +155,14 @@ bool Socket::receive_json_message(int sockfd, json &out_json){
     uint32_t len_net = 0;
     
     if (recv_exact(sockfd, &len_net, sizeof(len_net))){
-        std::cerr << "failed to read length." << std::endl;
+        spdlog::error("failed to read length.");
         return true;
     }
 
     uint32_t msg_len = ntohl(len_net);
     std::vector<char> buffer(msg_len);
     if (recv_exact(sockfd, buffer.data(), msg_len)){
-        std::cerr << "failed to read full JSON message." << std::endl;
+        spdlog::error("failed to read full JSON message.");
         return true;
     }
 
@@ -169,7 +170,7 @@ bool Socket::receive_json_message(int sockfd, json &out_json){
         std::string json_str(buffer.begin(), buffer.end());
         out_json = json::parse(json_str);
     }catch(const std::exception& e){
-        std::cerr << "JSON parse error: " << e.what() << std::endl;
+        spdlog::error("JSON parse error: {}", e.what());
         return true;
     }
 
@@ -183,17 +184,17 @@ void Socket::receive_json_unpack(int sockfd, json recv_json){
     int current_block_num = recv_json["CurrentBlockNum"];
 
     if (m_recv_dict_buff.find(hash_str) == m_recv_dict_buff.end()){
-        std::cout << "recv hash: " << hash_str << std::endl;
+        spdlog::info("recv hash: {}", hash_str);
         m_recv_dict_buff[hash_str] = "";
     }
 
     m_recv_dict_buff[hash_str] += payload;
-    // std::cout << "json_recv: " << recv_json.dump() << std::endl;
+    spdlog::debug("json_recv: {}", recv_json.dump());
     if (num_chunks != current_block_num)
         return;
     json json_obj = json::parse(m_recv_dict_buff[hash_str]);
     m_recv_dict_buff.erase(hash_str);
-    // std::cout << "json: " << json_obj.dump() << std::endl;
+    spdlog::debug("json: {}", json_obj.dump());
     auto it = m_cmd_func.find(json_obj["Cmd"]);
     if (it != m_cmd_func.end()) {
         it->second(sockfd, json_obj);
@@ -202,13 +203,13 @@ void Socket::receive_json_unpack(int sockfd, json recv_json){
 
 void Socket::connect_thread(){
 
-    std::cout << "connect thread started" << std::endl;
+    spdlog::info("connect thread started");
 
     while(Task::get_thread_state()){
         int client_id = accept(m_sock, nullptr, nullptr);
         if (client_id <= 0)
             continue;
-        std::cout << "successfuly to client: " << client_id << " connect!" << std::endl;
+        spdlog::info("successfuly to client: {}", client_id);
         m_clients.push_back(client_id);
         ThreadPool::Instance()->enqueue(&Socket::receive_thread, this, client_id);
         if (m_connect_func)
@@ -218,7 +219,7 @@ void Socket::connect_thread(){
 
 void Socket::send_thread(){
 
-    std::cout << "server web send data thread started!" << std::endl;
+    spdlog::info("server web send data thread started");
 
     while(Task::get_thread_state()){
         std::pair<int, json> data = m_send_queue.pop();
@@ -234,7 +235,7 @@ void Socket::send_thread(){
 
 void Socket::receive_thread(int client_id){
 
-    std::cout << client_id << " receive thread started!" << std::endl;
+    spdlog::info("{} receive thread started!", client_id);
 
     while(Task::get_thread_state()){
         json recv_json;

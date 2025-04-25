@@ -11,16 +11,17 @@
 #include "opencv2/core/mat.hpp"
 #include <cstddef>
 #include <sys/types.h>
+#include <spdlog/spdlog.h>
 
 #define TASK_SWITCH(x)      std::bind(&FaceDetection::x, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 
-// #define NET_PROTOTXT        util::File::get_currentWorking_directory() + "/model/deploy.prototxt"
-// #define NET_CAFFEMODEL      util::File::get_currentWorking_directory() + "/model/res10_300x300_ssd_iter_140000.caffemodel"
-// #define FACE_DEFAULT_MODEL  util::File::get_currentWorking_directory() + "/model/haarcascade_frontalface_default.xml"
-#define FACE_DEFAULT_MODEL  util::File::get_currentWorking_directory() + "/model/haarcascade_frontalface_alt2.xml"
-// #define FACE_DEFAULT_MODEL  util::File::get_currentWorking_directory() + "/model/det_500m.onnx"
-// #define FACE_DEFAULT_MODEL  util::File::get_currentWorking_directory() + "/model/haarcascade_frontalcatface.xml"
-#define FONT_PATH           util::File::get_currentWorking_directory() + "/font/NotoSansSC-VariableFont_wght.ttf"
+// #define NET_PROTOTXT        util::get_currentWorking_directory() + "/model/deploy.prototxt"
+// #define NET_CAFFEMODEL      util::get_currentWorking_directory() + "/model/res10_300x300_ssd_iter_140000.caffemodel"
+// #define FACE_DEFAULT_MODEL  util::get_currentWorking_directory() + "/model/haarcascade_frontalface_default.xml"
+#define FACE_DEFAULT_MODEL  util::get_currentWorking_directory() + "/model/haarcascade_frontalface_alt2.xml"
+// #define FACE_DEFAULT_MODEL  util::get_currentWorking_directory() + "/model/det_500m.onnx"
+// #define FACE_DEFAULT_MODEL  util::get_currentWorking_directory() + "/model/haarcascade_frontalcatface.xml"
+#define FONT_PATH           util::get_currentWorking_directory() + "/font/NotoSansSC-VariableFont_wght.ttf"
 
 FaceDetection::FaceDetection(){
 
@@ -46,7 +47,7 @@ void FaceDetection::initialize(){
     m_ft2 = cv::freetype::createFreeType2();
     m_ft2->loadFontData(FONT_PATH, 0);
     if (!m_face_cascade.load(FACE_DEFAULT_MODEL)) {
-        std::cerr << "failed to load the face detection model!" << std::endl;
+        spdlog::error("failed to load the face detection model!");
         return;
     }
     ThreadPool::Instance()->enqueue(&FaceDetection::dispose_thread, this);
@@ -65,7 +66,7 @@ size_t FaceDetection::detection_faces(cv::Mat image, std::vector<cv::Rect> &obje
 
 void FaceDetection::dispose_thread(){
 
-    std::cout << "dispose thread start successfuly" << std::endl;
+    spdlog::info("dispose thread started");
 
     while(true){
         cv::Mat frame = m_frame.pop();
@@ -99,7 +100,7 @@ void FaceDetection::enroll_face_task(cv::Mat &frame, cv::Mat &gray, std::vector<
     if (count < 50) 
         return;
     m_face_task = TASK_SWITCH(detection_face_task);
-    std::cout << "The " << m_user_num << " facial image capture has been completed." << std::endl;
+    spdlog::info("The {} facial image capture has been completed.", m_user_num);
     TrainModel::Instance()->train_data_add(m_enroll_face_images, m_enroll_face_labels);
     UserSQLite::Instance()->insert_data(m_user_num, m_user_name);
     m_enroll_face_images.clear();
@@ -113,18 +114,19 @@ void FaceDetection::detection_face_task(cv::Mat &frame, cv::Mat &gray, std::vect
         return;
 
     std::vector<int> detection_label;
+    std::string label_text = "";
     for (size_t i = 0; i < faces_size; i ++){
         int predicted_label = -1;
         double confidence = 0.0;
         cv::Rect face_rect = faces[i];
         cv::Mat face = gray(face_rect);
         cv::Scalar scalar;
-
+        
         bool state = TrainModel::Instance()->train_model_get(face, predicted_label, confidence);
         if (state && (predicted_label != -1) && (confidence < CONFIDENCE_THRESHOLD)){
             detection_label.push_back(predicted_label);
             scalar = cv::Scalar(0, 255, 0);
-            std::string label_text = UserSQLite::Instance()->get_name_by_id(predicted_label);
+            label_text = UserSQLite::Instance()->get_name_by_id(predicted_label);
             cv::Point text_org(face_rect.x, face_rect.y - 35);
             cv::Scalar color(255, 0, 0);
             m_ft2->putText(frame, label_text, text_org, 30, color, -1, cv::LINE_AA, false);
@@ -140,9 +142,10 @@ void FaceDetection::detection_face_task(cv::Mat &frame, cv::Mat &gray, std::vect
         return;
     m_last_detection_label = detection_label;
     std::string imgBase64 = util::encodeBase64(util::mat_to_buffer(frame));
-    std::string current_time = util::LocalTime::get_cuurent_time();
+    std::string current_time = util::get_cuurent_time();
     int imageId = BackendSQLite::Instance()->insert_data(current_time, imgBase64);
     WebConnect::Instance()->send_image(CLIENT_ALL, imageId, current_time, imgBase64);
+    spdlog::info("{} was identified", label_text);
 }
 
 void FaceDetection::frame_data_add(cv::Mat frame){

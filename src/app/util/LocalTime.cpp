@@ -7,7 +7,7 @@
 
 namespace util{
 
-long long LocalTime::get_cuurent_timestamp(){
+long long get_cuurent_timestamp(){
 
     auto now = std::chrono::system_clock::now();
     
@@ -17,7 +17,7 @@ long long LocalTime::get_cuurent_timestamp(){
     return timestamp;
 } 
 
-long long LocalTime::get_cuurent_timestamp_ms(){
+long long get_cuurent_timestamp_ms(){
 
     auto now = std::chrono::system_clock::now();
     auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
@@ -25,7 +25,7 @@ long long LocalTime::get_cuurent_timestamp_ms(){
     return millis;
 }
 
-std::string util::LocalTime::get_cuurent_time(){
+std::string get_cuurent_time(){
     
     auto now = std::chrono::system_clock::now();
     std::time_t now_time_t = std::chrono::system_clock::to_time_t(now);

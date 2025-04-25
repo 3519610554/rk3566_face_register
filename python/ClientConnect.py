@@ -1,8 +1,15 @@
 import json
 import time
 import queue
+import logging
 from flask import Flask, request, render_template, jsonify
 from flask_socketio import SocketIO, emit
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
 
 class ClientConnect:
     def __init__(self, app_, socketio_, socket_, sqlite_):
@@ -48,7 +55,7 @@ class ClientConnect:
         self.m_image_deque.put({'id': image_id, 'time': image_time, 'image': image_base64})
     
     def _start_stream(self):
-        print('Start streaming')
+        logging.info('Start streaming')
         data = self.m_sqlite.get_all_data()
         while not self.m_image_deque.empty():
             self.m_image_deque.get()
@@ -57,17 +64,18 @@ class ClientConnect:
         self.m_socketio.start_background_task(self._stream_images) 
 
     def _handle_connect(self):
-        print('Web connected')
+        logging.info('Web connected')
     
     def _handle_disconnect(self):
-        print('Web disconnected')
+        logging.info('Web disconnected')
 
         #注册接收socket接收命令函数
     def _register_recv(self):
         self.m_socket.recv_cmd_func_bind("Upload", self.recv_Upload_func)
-        self.m_socket.recv_cmd_func_bind("UploadId", self._recv_UploadId)
+        self.m_socket.recv_cmd_func_bind("UploadId", self._recv_UploadId_func)
 
-    def _recv_UploadId(self, json_data):
+    #接收需要同步的照片id
+    def _recv_UploadId_func(self, json_data):
         id_list = json_data["Id"]
         local_id = self.m_sqlite.get_all_id()
         missing = list(set(id_list) - set(local_id))
@@ -75,7 +83,7 @@ class ClientConnect:
         if len(missing) == 0:
             return
         self.send_need_image_id(missing)
-        print(f"need image id: {missing}")
+        logging.info(f"need image id: {missing}")
 
     def _register_routes(self):
         self.m_app.add_url_rule('/submit_form', 'submit_form', self._submit_form, methods=['POST'])
@@ -89,7 +97,7 @@ class ClientConnect:
     #录入人脸
     def _submit_form(self):
         name = request.get_json().get('name') 
-        print("_submit_form recv name: ", name)
+        logging.info("_submit_form recv name: ", name)
         self.send_type_in(name)
         return jsonify({"message": "录入成功", "status": "ok"}), 200
 
@@ -97,7 +105,7 @@ class ClientConnect:
     #删除显示图片
     def _delete_image(self):
         image_id = request.get_json().get('id')
-        print("_delete_image recv id: ", image_id)
+        logging.info("_delete_image recv id: ", image_id)
         self.send_delete_image(image_id)
         self.m_sqlite.delete_by_id(image_id)
         return jsonify({"message": "删除成功", "status": "ok"}), 200

@@ -3,10 +3,12 @@
 #include <unistd.h>
 #include <json.hpp>
 #include <cstdint>
+#include <spdlog/spdlog.h>
 #include "LocalTime.h"
 #include "Socket.h"
 #include "FaceDetection.h"
 #include "BackendSQLite.h"
+
 
 #define CHUNK_SIZE                  512
 
@@ -52,7 +54,8 @@ void WebConnect::send_image(int sockfd, int id, std::string time, std::string im
     std::string json_str = json_data.dump();
 
     Socket::Instance()->data_subpackage(sockfd, json_data);
-    std::cout << "send image" << std::endl;
+
+    spdlog::info("send image");
 }
 
 void WebConnect::send_image_id(int sockfd, json id_arr){
@@ -61,26 +64,22 @@ void WebConnect::send_image_id(int sockfd, json id_arr){
     json_data["Cmd"] = "UploadId";
     json_data["Id"] = id_arr;
     Socket::Instance()->data_subpackage(sockfd, json_data);
-    std::cout << "send all id" << std::endl;
+
+    spdlog::info("send all id");
 }
 
 void WebConnect::connect_successfly_func(int client_id){
 
-    // std::vector<Backend_Info> data;
     std::vector<int> id_data;
 
-    // BackendSQLite::Instance()->get_all_data(data);
-    // for (auto& row : data){
-    //     send_image(client_id, row.id, row.time, row.base64);
-    // }
     BackendSQLite::Instance()->get_all_id(id_data);
     json j_array = json::array();
     for (auto& row : id_data){
-        // send_image(client_id, row.id, row.time, row.base64);
         j_array.push_back(row);
     }
     send_image_id(client_id, j_array);
-    std::cout << "send sql image: " << id_data.size() << std::endl;
+
+    spdlog::info("send sql image: {}", id_data.size());
 }
 
 void WebConnect::type_in_recv_func(int sockfd, json json_data){
@@ -93,17 +92,16 @@ void WebConnect::delete_image_recv_func(int sockfd, json json_data){
 
     int image_id = json_data["Id"];
     BackendSQLite::Instance()->delete_by_id(image_id);
-    std::cout << "delete image id: " << image_id << std::endl;
+    spdlog::info("delete image id: {}", image_id);
 }
 
 void WebConnect::need_image_id_func(int sockfd, json json_data){
 
-    // int image_id = json_data["Id"];
-    std::cout << "photos that need to be synchronized: " << json_data["Id"] << std::endl;
     for (auto &item : json_data["Id"]){
         Backend_Info data;
         if (!BackendSQLite::Instance()->get_data_by_id(item, data))
             continue;
         send_image(sockfd, data.id, data.time, data.base64);
     }
+    spdlog::info("photos that need to be synchronized: {}", json_data["Id"].dump());
 }

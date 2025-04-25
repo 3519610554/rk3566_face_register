@@ -16,7 +16,7 @@ std::string toBase62(size_t value){
 
 std::string generateTimeHashString(){
 
-    auto millis = LocalTime::get_cuurent_timestamp_ms();
+    auto millis = get_cuurent_timestamp_ms();
     std::hash<long long> hasher;
     size_t hashVal = hasher(millis);
 

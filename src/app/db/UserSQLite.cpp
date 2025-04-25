@@ -1,7 +1,8 @@
 #include "UserSQLite.h"
 #include "File.h"
+#include <spdlog/spdlog.h>
 
-#define SQL_FILE_PATH           (util::File::get_currentWorking_directory()+"/sql/")
+#define SQL_FILE_PATH           (util::get_currentWorking_directory()+"/sql/")
 #define SQL_FILE                (SQL_FILE_PATH + "UserSQLite.db")
 
 UserSQLite::UserSQLite(){
@@ -21,7 +22,7 @@ int UserSQLite::get_row_count(){
 
     int rc = sqlite3_prepare_v2(m_db, sql, -1, &m_stmt, nullptr);
     if (rc != SQLITE_OK) {
-        std::cerr << "failed to prepare statement: " << sqlite3_errmsg(m_db) << std::endl;
+        spdlog::error("failed to prepare statement: {}", sqlite3_errmsg(m_db));
         close_sqlite();
         return 0;
     }
@@ -38,10 +39,10 @@ int UserSQLite::get_row_count(){
 
 void UserSQLite::open_sqlite(){
 
-    util::File::create_file(SQL_FILE_PATH.c_str(), nullptr);
+    util::create_file(SQL_FILE_PATH.c_str(), nullptr);
     int rc = sqlite3_open(SQL_FILE.c_str(), &m_db);
     if (rc){
-        std::cerr << "cannot open sqlite: " << rc << std::endl;
+        spdlog::error("cannot open sqlite: {}", rc);
         return;
     }
     if (m_table_flag)
@@ -49,7 +50,7 @@ void UserSQLite::open_sqlite(){
     const char* sql_create_table = "CREATE TABLE IF NOT EXISTS people (id INTEGER PRIMARY KEY, name TEXT);";
     rc = sqlite3_exec(m_db, sql_create_table, nullptr, nullptr, &m_errmsg);
     if (rc) {
-        std::cerr << "create table failed: " << sqlite3_errmsg(m_db) << std::endl;
+        spdlog::error("create table failed: {}", sqlite3_errmsg(m_db));
         return;
     }
     m_table_flag = true;
@@ -73,7 +74,7 @@ std::string UserSQLite::get_name_by_id(int id){
 
     int rc = sqlite3_prepare_v2(m_db, sql, -1, &m_stmt, nullptr);
     if (rc != SQLITE_OK) {
-        std::cerr << "failed to prepare statement: " << sqlite3_errmsg(m_db) << std::endl;
+        spdlog::error("failed to prepare statement: {}", sqlite3_errmsg(m_db));
         close_sqlite();
         return "";
     }
@@ -100,7 +101,7 @@ void UserSQLite::insert_data(int label, std::string name){
 
     int rc = sqlite3_prepare_v2(m_db, sql.c_str(), -1, &m_stmt, nullptr);
     if (rc != SQLITE_OK) {
-        std::cerr << "failed to prepare statement: " << sqlite3_errmsg(m_db) << std::endl;
+        spdlog::error("failed to prepare statement: {}", sqlite3_errmsg(m_db));
         close_sqlite();
         return;
     }
@@ -110,7 +111,7 @@ void UserSQLite::insert_data(int label, std::string name){
 
     rc = sqlite3_step(m_stmt);
     if (rc != SQLITE_DONE){
-        std::cerr << "execution failed: " << sqlite3_errmsg(m_db) << std::endl;
+        spdlog::error("execution failed: {}", sqlite3_errmsg(m_db));
     }
 
     clean_resource();

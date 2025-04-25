@@ -1,9 +1,9 @@
 #include "FaceTask.h"
-#include "InputCheck.h"
 #include "CameraUvc.h"
 #include "FaceDetection.h"
 #include "WebConnect.h"
 #include "Task.h"
+#include <spdlog/spdlog.h>
 
 FaceTask::FaceTask(){
 
@@ -12,6 +12,13 @@ FaceTask::FaceTask(){
 
 FaceTask::~FaceTask(){
     
+}
+
+FaceTask* FaceTask::Instance(){
+
+    static FaceTask face_task;
+
+    return &face_task;
 }
 
 void FaceTask::initialize(){
@@ -27,19 +34,6 @@ void FaceTask::run(){
             break;
         }         
         FaceDetection::Instance()->frame_data_add(frame);
-
-        int ch = util::InputCheck::get_char_non_blocking();
-        if (ch == 'q') {
-            std::cout << "already exists" << std::endl;
-            break;
-        }
     }
     Task::all_thread_stop();
-}
-
-FaceTask* FaceTask::Instance(){
-
-    static FaceTask face_task;
-
-    return &face_task;
 }

@@ -46,6 +46,9 @@ endif()
 #curl
 # include_directories(${CMAKE_INSTALL_PREFIX}/include/curl)
 
+#spdlog
+include_directories(${CMAKE_INSTALL_PREFIX}/include/spdlog)
+
 message(STATUS ${CMAKE_CURRENT_SOURCE_DIR})
 
 if(COMMAND cmake_policy)

@@ -2,22 +2,24 @@
 #include <unistd.h>
 #include <limits.h>
 #include <sys/stat.h>
+#include <spdlog/spdlog.h>
 
 #define    _unlink      unlink
 #define    _rmdir       rmdir
 #define    _access      access
 
-std::string util::File::get_currentWorking_directory(){
+namespace util {
+std::string get_currentWorking_directory(){
     char buffer[PATH_MAX];
     if (getcwd(buffer, sizeof(buffer)) != NULL) {
         return std::string(buffer);
     } else {
-        std::cerr << "failed to get the current directory" << std::endl;
+        spdlog::error("failed to get the current directory");
         return "";
     }
 }
 
-FILE *util::File::create_file(const char *file, const char *mode){
+FILE* create_file(const char *file, const char *mode){
     std::string path = file;
     std::string dir;
     size_t index = 1;
@@ -30,7 +32,7 @@ FILE *util::File::create_file(const char *file, const char *mode){
         }
         if (_access(dir.c_str(), 0) == -1) { //access函数是查看是不是存在
             if (mkdir(dir.c_str(), 0777) == -1) {  //如果不存在就用mkdir函数来创建
-                std::cout << "mkdir : " << dir;
+                spdlog::info("mkdir: {}", dir);
                 return nullptr;
             }
         }
@@ -41,7 +43,7 @@ FILE *util::File::create_file(const char *file, const char *mode){
     return ret;
 }
 
-bool util::File::file_exist(const char *path){
+bool file_exist(const char *path){
 
     auto fp = fopen(path, "rb");
     if (!fp) {
@@ -49,4 +51,5 @@ bool util::File::file_exist(const char *path){
     }
     fclose(fp);
     return true;
+}
 }

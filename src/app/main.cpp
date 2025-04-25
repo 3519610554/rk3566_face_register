@@ -5,11 +5,10 @@
 #include "FaceDetection.h"
 #include "WebConnect.h"
 #include "FaceTask.h"
-// #include "ThreadPool.h"
 
 int main() {
     
-    ThreadPool::Instance()->initialize(7);
+    ThreadPool::Instance()->initialize(8);
     Task::all_thread_start();
     CameraUvc::Instance()->initialize();
     WebConnect::Instance()->initialize();
@@ -22,4 +21,3 @@ int main() {
 
     return 0;
 }
-

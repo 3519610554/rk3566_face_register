@@ -2,6 +2,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cstdlib>
+#include <spdlog/spdlog.h>
 
 #define CAP_WIDTH                   320
 #define CAP_HEIGHT                  176
@@ -32,16 +33,16 @@ void CameraUvc::initialize(std::string camera_id){
     m_cap.set(cv::CAP_PROP_FRAME_WIDTH, CAP_WIDTH);
     m_cap.set(cv::CAP_PROP_FRAME_HEIGHT, CAP_HEIGHT);
     m_cap.set(cv::CAP_PROP_FPS, 30);
-    setenv("DISPLAY", ":10.0", 1);
+    setenv("DISPLAY", ":11.0", 1);
 
-    std::cout << "fps: " << m_cap.get(cv::CAP_PROP_FPS) << std::endl;
+    spdlog::info("Camera fps: {}, width: {}, height: {}", m_cap.get(cv::CAP_PROP_FPS), CAP_WIDTH, CAP_HEIGHT);
 }
 
 bool CameraUvc::frame_get(cv::Mat &frame){
 
     m_cap >> frame; 
     if (frame.empty()) {
-        std::cerr << "读取帧失败" << std::endl;
+        spdlog::error("faild to frame reading");
         return false;
     }
     cv::flip(frame, frame, 1);
