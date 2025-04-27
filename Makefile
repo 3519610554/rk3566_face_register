@@ -25,6 +25,7 @@ release:
 	patchelf --set-rpath ${INSTALL_DIR}/lib/ ${INSTALL_DIR}/bin/${FRAMEWORK_NAME}
 opencv:
 	@[ ! -d ${BUILD_DIR}/opencv ] && git clone https://github.com/opencv/opencv.git --depth=1 ${BUILD_DIR}/opencv || echo "opencv source ready..."
+	@[ ! -d ${BUILD_DIR}/opencv/opencv_contrib-4.x ] && git clone -b 4.x https://github.com/opencv/opencv_contrib.git --depth=1 ${BUILD_DIR}/opencv/opencv_contrib-4.x || echo "opencv_contrib-4.x source ready..."
 	@[ -e ${BUILD_DIR}/opencv/.build_ok ] && echo "opencv compilation completed..." || mkdir -p ${BUILD_DIR}/opencv/build 
 
 	cd ${BUILD_DIR}/opencv/build && \
@@ -42,7 +43,7 @@ opencv:
 		-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} \
 		-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} \
 		-DINSTALL_DIR=${INSTALL_DIR} ${BUILD_DIR}/opencv && \
-	make -j2 && make install && cd -
+	make -j4 && make install && cd -
 	touch ${BUILD_DIR}/opencv/.build_ok
 
 sqlite:
