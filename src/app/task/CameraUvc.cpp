@@ -4,9 +4,6 @@
 #include <cstdlib>
 #include <spdlog/spdlog.h>
 
-#define CAP_WIDTH                   320
-#define CAP_HEIGHT                  176
-
 CameraUvc::CameraUvc(){
 
     

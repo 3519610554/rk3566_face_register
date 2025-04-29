@@ -20,7 +20,7 @@ release:
 	cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -DFRAMEWORK_NAME=${FRAMEWORK_NAME} \
 	-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} ..\
 	&& \
-	make && make install && cd -
+	make -j3 && make install && cd -
 	touch ${BUILD_DIR}/.build_ok
 	patchelf --set-rpath ${INSTALL_DIR}/lib/ ${INSTALL_DIR}/bin/${FRAMEWORK_NAME}
 opencv:
@@ -53,8 +53,8 @@ sqlite:
 	tar -xzvf sqlite-autoconf-3490100.tar.gz && \
 	rm -rf sqlite-autoconf-3490100.tar.gz && \
 	mv sqlite-autoconf-3490100 sqlite && \
-	cd sqlite && ./configure --prefix=${INSTALL_DIR} && \
-	make -j4 && sudo make install && cd -
+	cd sqlite && ./configure --prefix=${INSTALL_DIR} --includedir=${INSTALL_DIR}/include/sqlite && \
+	make -j6 && sudo make install && cd -
 
 libcurl:
 	@[ ! -d ${BUILD_DIR}/libcurl ] && git clone https://github.com/curl/curl.git --depth=1 ${BUILD_DIR}/libcurl || echo "libcurl source ready..."
@@ -66,9 +66,17 @@ libcurl:
 	touch ${BUILD_DIR}/libcurl/.build_ok
 
 json:
-	wget https://github.com/nlohmann/json/releases/download/v3.12.0/json.hpp -P ${INSTALL_DIR}/include
+	@[ ! -d ${INSTALL_DIR}/include/json ] echo "json include exist" || mkdir -p ${INSTALL_DIR}/include/json
+	wget https://github.com/nlohmann/json/releases/download/v3.12.0/json.hpp -P ${INSTALL_DIR}/include/json
 	
 spdlog:
 	@[ ! -d ${BUILD_DIR}/spdlog ] && git clone https://github.com/gabime/spdlog.git --depth=1 ${BUILD_DIR}/spdlog || echo "spdlog source ready..."
-	
-	cp -r ${BUILD_DIR}/spdlog/include/spdlog ${INSTALL_DIR}/include
+
+	cp -r ${BUILD_DIR}/spdlog/include/spdlog ${INSTALL_DIR}/include/spdlog
+
+rknn:
+	@[ ! -d ${BUILD_DIR}/rknn ] && git clone https://github.com/airockchip/rknn-toolkit2.git --depth=1 ${BUILD_DIR}/rknn || echo "rknn source ready..."
+	@[ ! -d ${INSTALL_DIR}/include/rknn ] echo "rknn include exist" || mkdir -p ${INSTALL_DIR}/include/rknn
+
+	cp -r ${BUILD_DIR}/rknn/rknpu2/runtime/Linux/librknn_api/include/*.h ${INSTALL_DIR}/include/rknn
+	cp -r ${BUILD_DIR}/rknn/rknpu2/runtime/Linux/librknn_api/aarch64/*.so ${INSTALL_DIR}/lib

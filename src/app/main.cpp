@@ -5,7 +5,6 @@
 #include "FaceDetection.h"
 #include "WebConnect.h"
 #include "FaceTask.h"
-
 int main() {
     
     ThreadPool::Instance()->initialize(8);

@@ -3,6 +3,9 @@
 
 #include "OpencvPublic.h"
 
+#define CAP_WIDTH                   320
+#define CAP_HEIGHT                  320
+
 class CameraUvc{
 public:
     CameraUvc();

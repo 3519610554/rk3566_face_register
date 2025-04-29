@@ -27,6 +27,24 @@ add_definitions(-g)
 message(STATUS "CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
 message(STATUS "CMAKE_SYSTEM_PROCESSOR: ${CMAKE_SYSTEM_PROCESSOR}")
 
+# directory
+set(DEP_SOURCE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty)
+message(STATUS "DEP_SOURCE_PATH: ${DEP_SOURCE_PATH}")
+
+#librga
+set(LIBRGA_API_PATH ${DEP_SOURCE_PATH}/librga)
+include_directories( ${LIBRGA_API_PATH}/include)
+set(LIBRGA_LIB ${LIBRGA_API_PATH}/lib/librga.a)
+
+#stb_image
+set(STD_IMAGE_API_PATH ${DEP_SOURCE_PATH}/stb_image)
+include_directories( ${STD_IMAGE_API_PATH}/include)
+
+#jpeg_turbo
+set(JPEG_TURBO_API_PATH ${DEP_SOURCE_PATH}/jpeg_turbo)
+include_directories( ${JPEG_TURBO_API_PATH}/include)
+set(JPEG_TURBO_LIB ${JPEG_TURBO_API_PATH}/lib/libturbojpeg.a)
+
 #target
 include_directories(${CMAKE_INSTALL_PREFIX}/include)
 link_directories(${CMAKE_INSTALL_PREFIX}/lib)
@@ -41,10 +59,27 @@ if(OpenMP_CXX_FOUND OR OPENMP_FOUND)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
     add_definitions(-fopenmp)
+    message(STATUS "find OpenMP")
 endif()
+
+#opencl
+find_package(OpenCL REQUIRED)
+if (OpenCL_FOUND)
+    include_directories(${OpenCL_INCLUDE_DIRS})
+    message(STATUS "find OpenCL: ${OpenCL_LIBRARIES}")
+endif()
+
+#sqlite
+include_directories(${CMAKE_INSTALL_PREFIX}/include/sqlite)
 
 #curl
 # include_directories(${CMAKE_INSTALL_PREFIX}/include/curl)
+
+#json
+include_directories(${CMAKE_INSTALL_PREFIX}/include/json)
+
+#rknn
+include_directories(${CMAKE_INSTALL_PREFIX}/include/rknn)
 
 #spdlog
 include_directories(${CMAKE_INSTALL_PREFIX}/include/spdlog)

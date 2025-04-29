@@ -28,7 +28,6 @@ protected:
     //人脸检测任务
     void detection_face_task(cv::Mat &frame, cv::Mat &gray, std::vector<cv::Rect> faces);
 private:
-    // cv::dnn::Net m_net;
     //中文字体
     cv::Ptr<cv::freetype::FreeType2> m_ft2;
     //检测模型

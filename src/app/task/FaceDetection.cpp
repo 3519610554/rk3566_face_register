@@ -12,6 +12,8 @@
 #include <cstddef>
 #include <sys/types.h>
 #include <spdlog/spdlog.h>
+#include "CaffeModel.h"
+#include "RnkkInference.h"
 
 #define TASK_SWITCH(x)      std::bind(&FaceDetection::x, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 
@@ -22,6 +24,7 @@
 // #define FACE_DEFAULT_MODEL  util::get_currentWorking_directory() + "/model/det_500m.onnx"
 // #define FACE_DEFAULT_MODEL  util::get_currentWorking_directory() + "/model/haarcascade_frontalcatface.xml"
 #define FONT_PATH           util::get_currentWorking_directory() + "/font/NotoSansSC-VariableFont_wght.ttf"
+
 
 FaceDetection::FaceDetection(){
 
@@ -51,6 +54,8 @@ void FaceDetection::initialize(){
         return;
     }
     ThreadPool::Instance()->enqueue(&FaceDetection::dispose_thread, this);
+    // CaffeModel::Instance()->initialize();
+    RnkkInference::Instance()->initialize();
 }
 
 size_t FaceDetection::detection_faces(cv::Mat image, std::vector<cv::Rect> &objects){
@@ -58,8 +63,13 @@ size_t FaceDetection::detection_faces(cv::Mat image, std::vector<cv::Rect> &obje
     if (++m_frame_interval_cnt < 3)
         return objects.size();
     m_frame_interval_cnt = 0;
-
-    m_face_cascade.detectMultiScale(image, objects, 1.2, 6, 0, cv::Size(30, 30));
+    objects.clear();
+    // m_face_cascade.detectMultiScale(image, objects, 1.2, 6, 0, cv::Size(30, 30));
+    // CaffeModel::Instance()->detection_face(image, objects);
+    RnkkInference::Instance()->detection_face(image, objects);
+    if (objects.size() > 0){
+        spdlog::info("face num: {}", objects.size());
+    }
 
     return objects.size();
 }
@@ -70,10 +80,10 @@ void FaceDetection::dispose_thread(){
 
     while(true){
         cv::Mat frame = m_frame.pop();
-        cv::Mat gray;
-        cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
-        detection_faces(gray, m_faces);
-        m_face_task(frame, gray, m_faces);
+        // cv::Mat gray;
+        // cv::cvtColor(frame, gray, cv::COLOR_RGBA2RGB);
+        // detection_faces(frame, m_faces);
+        // m_face_task(frame, frame, m_faces);
         cv::imshow("USB Camera", frame);
         cv::waitKey(1);
     }
