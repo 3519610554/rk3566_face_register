@@ -7,6 +7,8 @@ CMAKE_STRIP := ${CMAKE_CROSS}strip
 CMAKE_C_COMPILER := ${CMAKE_CROSS}gcc
 CMAKE_CXX_COMPILER := ${CMAKE_CROSS}g++
 FRAMEWORK_NAME := UVC_Camera
+TOOLCHAIN_FILE := ${PWD}/cmake/arm-toolchain.cmake
+THREAD_NUM := 14
 
 all: release
 
@@ -17,10 +19,11 @@ release:
 	@[ -e ${BUILD_DIR}/.build_ok ] && echo "release compilation completed ..." || mkdir -p ${BUILD_DIR}
 
 	cd ${BUILD_DIR} && \
-	cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -DFRAMEWORK_NAME=${FRAMEWORK_NAME} \
-	-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} ..\
+	cmake -DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE} \
+		-DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -DFRAMEWORK_NAME=${FRAMEWORK_NAME} ..\
 	&& \
-	make -j3 && make install && cd -
+	make -j${THREAD_NUM} && make install && cd -
+	cp -r font ${INSTALL_DIR}/bin && cp -r model ${INSTALL_DIR}/bin
 	touch ${BUILD_DIR}/.build_ok
 	patchelf --set-rpath ${INSTALL_DIR}/lib/ ${INSTALL_DIR}/bin/${FRAMEWORK_NAME}
 opencv:
@@ -29,7 +32,8 @@ opencv:
 	@[ -e ${BUILD_DIR}/opencv/.build_ok ] && echo "opencv compilation completed..." || mkdir -p ${BUILD_DIR}/opencv/build 
 
 	cd ${BUILD_DIR}/opencv/build && \
-	cmake -DCMAKE_BUILD_TYPE=Release -DSMALL_LOCALSIZE=ON -DENABLE_FAST_MATH=ON -DWITH_IPP=OFF \
+	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE} \
+		-DSMALL_LOCALSIZE=ON -DENABLE_FAST_MATH=ON -DWITH_IPP=OFF \
 		-DUSE_O3=ON -DENABLE_CXX11=ON -DWITH_TBB=ON -DWITH_OPENMP=ON -DBUILD_EXAMPLES=OFF -DBUILD_DOCS=OFF -DWITH_WEBP=OFF \
 		-DWITH_OPENCL=ON -DWITH_OPENGL=OFF -DWITH_QT=OFF -DWITH_GTK=ON -DWITH_GTK_2_X=ON -DWITH_CUDA=OFF \
 		-DBUILD_TESTS=OFF -DBUILD_PERF_TESTS=OFF -DBUILD_opencv_apps=OFF -DBUILD_ZLIB=OFF \
@@ -38,23 +42,24 @@ opencv:
 		-DBUILD_opencv_flann=ON -DBUILD_opencv_gapi=OFF -DBUILD_opencv_ml=OFF \
 		-DWITH_GSTREAMER=OFF -DWITH_JAVA=OFF -DOPENCV_ENABLE_FREE=ON \
 		-DBUILD_opencv_stitching=OFF -DBUILD_opencv_python2=OFF -DBUILD_opencv_python3=OFF \
-		-DOPENCV_EXTRA_MODULES_PATH=../opencv_contrib-4.x/modules \
+		-DWITH_FREETYPE=ON -DOPENCV_EXTRA_MODULES_PATH=../opencv_contrib-4.x/modules \
 		-DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
-		-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} \
-		-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} \
 		-DINSTALL_DIR=${INSTALL_DIR} ${BUILD_DIR}/opencv && \
-	make -j4 && make install && cd -
+	make -j${THREAD_NUM} && make install && cd -
 	touch ${BUILD_DIR}/opencv/.build_ok
 
 sqlite:
-	@[ ! -d ${BUILD_DIR}/sqlite ] && wget https://sqlite.org/2025/sqlite-autoconf-3490100.tar.gz -P ${BUILD_DIR} || echo "sqlite source ready..."
-	
-	cd ${BUILD_DIR} && \
-	tar -xzvf sqlite-autoconf-3490100.tar.gz && \
-	rm -rf sqlite-autoconf-3490100.tar.gz && \
-	mv sqlite-autoconf-3490100 sqlite && \
-	cd sqlite && ./configure --prefix=${INSTALL_DIR} --includedir=${INSTALL_DIR}/include/sqlite && \
-	make -j6 && sudo make install && cd -
+	@[ ! -d ${BUILD_DIR}/sqlite ] && wget https://sqlite.org/2025/sqlite-autoconf-3490100.tar.gz -O "${BUILD_DIR}/sqlite.tar.gz" -P ${BUILD_DIR} || echo "sqlite source ready..."
+	@[ -f ${BUILD_DIR}/sqlite.tar.gz ] && { \
+    tar -xzf ${BUILD_DIR}/sqlite.tar.gz -C ${BUILD_DIR} && \
+		rm -f ${BUILD_DIR}/sqlite.tar.gz && \
+		mv ${BUILD_DIR}/sqlite-autoconf-3490100 ${BUILD_DIR}/sqlite; \
+	} || echo "sqlite.tar.gz missing, skipping extraction"
+	cd ${BUILD_DIR}/sqlite && \
+	./configure --host=aarch64-linux-gnu \
+		--prefix=${INSTALL_DIR} \
+		--includedir=${INSTALL_DIR}/include/sqlite && \
+	make -j${THREAD_NUM} && sudo make install && cd -
 
 libcurl:
 	@[ ! -d ${BUILD_DIR}/libcurl ] && git clone https://github.com/curl/curl.git --depth=1 ${BUILD_DIR}/libcurl || echo "libcurl source ready..."
@@ -62,7 +67,7 @@ libcurl:
 
 	cd ${BUILD_DIR}/libcurl/build && \
 	cmake .. -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} && \
-	make -j4 && sudo make install && cd -
+	make -j$(nproc) && sudo make install && cd -
 	touch ${BUILD_DIR}/libcurl/.build_ok
 
 json:

@@ -12,18 +12,11 @@
 #include <cstddef>
 #include <sys/types.h>
 #include <spdlog/spdlog.h>
-#include "CaffeModel.h"
 #include "RnkkInference.h"
 
 #define TASK_SWITCH(x)      std::bind(&FaceDetection::x, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 
-// #define NET_PROTOTXT        util::get_currentWorking_directory() + "/model/deploy.prototxt"
-// #define NET_CAFFEMODEL      util::get_currentWorking_directory() + "/model/res10_300x300_ssd_iter_140000.caffemodel"
-// #define FACE_DEFAULT_MODEL  util::get_currentWorking_directory() + "/model/haarcascade_frontalface_default.xml"
-#define FACE_DEFAULT_MODEL  util::get_currentWorking_directory() + "/model/haarcascade_frontalface_alt2.xml"
-// #define FACE_DEFAULT_MODEL  util::get_currentWorking_directory() + "/model/det_500m.onnx"
-// #define FACE_DEFAULT_MODEL  util::get_currentWorking_directory() + "/model/haarcascade_frontalcatface.xml"
-#define FONT_PATH           util::get_currentWorking_directory() + "/font/NotoSansSC-VariableFont_wght.ttf"
+#define FONT_PATH           "./font/NotoSansSC-VariableFont_wght.ttf"
 
 
 FaceDetection::FaceDetection(){
@@ -49,12 +42,7 @@ void FaceDetection::initialize(){
 
     m_ft2 = cv::freetype::createFreeType2();
     m_ft2->loadFontData(FONT_PATH, 0);
-    if (!m_face_cascade.load(FACE_DEFAULT_MODEL)) {
-        spdlog::error("failed to load the face detection model!");
-        return;
-    }
     ThreadPool::Instance()->enqueue(&FaceDetection::dispose_thread, this);
-    // CaffeModel::Instance()->initialize();
     RnkkInference::Instance()->initialize();
 }
 
@@ -64,8 +52,6 @@ size_t FaceDetection::detection_faces(cv::Mat image, std::vector<cv::Rect> &obje
         return objects.size();
     m_frame_interval_cnt = 0;
     objects.clear();
-    // m_face_cascade.detectMultiScale(image, objects, 1.2, 6, 0, cv::Size(30, 30));
-    // CaffeModel::Instance()->detection_face(image, objects);
     RnkkInference::Instance()->detection_face(image, objects);
     if (objects.size() > 0){
         spdlog::info("face num: {}", objects.size());
@@ -86,6 +72,7 @@ void FaceDetection::dispose_thread(){
         // m_face_task(frame, frame, m_faces);
         cv::imshow("USB Camera", frame);
         cv::waitKey(1);
+        spdlog::info("loop");
     }
 }
 

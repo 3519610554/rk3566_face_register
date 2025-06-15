@@ -8,7 +8,7 @@
 #include "image_drawing.h"
 #include "file_utils.h"
 
-#define RNKK_MODEL_PATH     "/root/CMake/model/RetinaFace_mobile320.rknn"
+#define RNKK_MODEL_PATH     "./model/RetinaFace_mobile320.rknn"
 #define RNKK_WIDTH          640
 #define RNKK_HEIGHT         640
 

@@ -6,9 +6,9 @@
 #include <chrono> 
 #include <spdlog/spdlog.h>
 
-#define FACE_MODEL_PATH         util::get_currentWorking_directory()+"/model/faces/"
-#define FACE_MODEL_YML          (FACE_MODEL_PATH+"face_gather.yml").c_str()
-#define FACE_MODEL              (FACE_MODEL_PATH+"face_model.xml").c_str()
+#define FACE_MODEL_PATH         "/model/faces/"
+#define FACE_MODEL_YML          (FACE_MODEL_PATH"face_gather.yml")
+#define FACE_MODEL              (FACE_MODEL_PATH"face_model.xml")
 
 #define TARIN_WIDTH                 100
 #define TARIN_HEIGHT                100
@@ -20,7 +20,7 @@
 #define FS_LABELS_READ(x, data)     x["labels"] >> data
 
 TrainModel::TrainModel(){
-    util::create_file((FACE_MODEL_PATH).c_str(), nullptr);
+    util::create_file(FACE_MODEL_PATH, nullptr);
     m_model = MPDEL_TRAIN_METHODS::create();
 }
 

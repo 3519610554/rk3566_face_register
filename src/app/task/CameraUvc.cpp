@@ -43,6 +43,10 @@ bool CameraUvc::frame_get(cv::Mat &frame){
         return false;
     }
     cv::flip(frame, frame, 1);
+    if (frame.cols == 0 || frame.rows == 0) {
+        spdlog::info("无效图像：图像尺寸为 0。");
+    }
+    spdlog::info("return frame");
     return true;
 }
 

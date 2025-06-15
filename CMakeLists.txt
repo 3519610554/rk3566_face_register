@@ -48,7 +48,7 @@ set(JPEG_TURBO_LIB ${JPEG_TURBO_API_PATH}/lib/libturbojpeg.a)
 #target
 include_directories(${CMAKE_INSTALL_PREFIX}/include)
 link_directories(${CMAKE_INSTALL_PREFIX}/lib)
-SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 
 #opencv
 include_directories(${CMAKE_INSTALL_PREFIX}/include/opencv4)

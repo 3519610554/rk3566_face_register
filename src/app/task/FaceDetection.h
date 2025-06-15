@@ -30,8 +30,6 @@ protected:
 private:
     //中文字体
     cv::Ptr<cv::freetype::FreeType2> m_ft2;
-    //检测模型
-    cv::CascadeClassifier m_face_cascade;
     //人脸坐标
     std::vector<cv::Rect> m_faces;
     //录入照片

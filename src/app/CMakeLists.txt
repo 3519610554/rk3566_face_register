@@ -18,23 +18,25 @@ add_executable(${FRAMEWORK_NAME}
     ${SRC_LIST}
 )
 
-set (EXTRA_LIBS 
-    opencv_highgui 
-    opencv_imgproc 
-    opencv_imgcodecs 
-    opencv_core 
-    # opencv_video 
-    opencv_videoio 
-    opencv_objdetect 
+set(EXTRA_LIBS
+    opencv_highgui
+    opencv_imgproc
+    opencv_imgcodecs
+    opencv_core
+    opencv_videoio
+    opencv_objdetect
+    opencv_features2d
+    opencv_flann
+    opencv_calib3d  
     opencv_face
     opencv_freetype
     opencv_dnn
-    stdc++ dl
-    -std=c++11
-    -lsqlite3
-    -lrknnrt
-    -lOpenCL
-    # -lcurl
+    sqlite3
+    rknnrt
+    OpenCL
+    pthread            
+    dl
+    stdc++
 )
 
 target_link_libraries(${FRAMEWORK_NAME}

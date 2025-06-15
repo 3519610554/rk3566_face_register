@@ -6,3 +6,4 @@ model/faces/
 python/venv/
 python/__pycache__/
 sql/
+.vscode/
