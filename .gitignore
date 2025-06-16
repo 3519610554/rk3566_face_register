@@ -3,7 +3,7 @@ build/
 .vscode/
 target/
 model/faces/
-python/venv/
-python/__pycache__/
+venv/
+__pycache__/
 sql/
 .vscode/
