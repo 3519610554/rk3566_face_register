@@ -26,7 +26,7 @@ void CameraUvc::initialize(std::string camera_id){
 
     m_cap = cv::VideoCapture(camera_id, cv::CAP_V4L2);
     // 设置摄像头参数：MJPG + 分辨率 + 帧率
-    m_cap.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'));
+    m_cap.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('Y', 'U', 'Y', 'V'));
     m_cap.set(cv::CAP_PROP_FRAME_WIDTH, CAP_WIDTH);
     m_cap.set(cv::CAP_PROP_FRAME_HEIGHT, CAP_HEIGHT);
     m_cap.set(cv::CAP_PROP_FPS, 30);
@@ -46,7 +46,6 @@ bool CameraUvc::frame_get(cv::Mat &frame){
     if (frame.cols == 0 || frame.rows == 0) {
         spdlog::info("无效图像：图像尺寸为 0。");
     }
-    spdlog::info("return frame");
     return true;
 }
 

@@ -23,7 +23,7 @@ release:
 		-DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -DFRAMEWORK_NAME=${FRAMEWORK_NAME} ..\
 	&& \
 	make -j${THREAD_NUM} && make install && cd -
-	cp -r font ${INSTALL_DIR}/bin && cp -r model ${INSTALL_DIR}/bin
+	cp -r assets ${INSTALL_DIR}
 	touch ${BUILD_DIR}/.build_ok
 	patchelf --set-rpath ${INSTALL_DIR}/lib/ ${INSTALL_DIR}/bin/${FRAMEWORK_NAME}
 opencv:

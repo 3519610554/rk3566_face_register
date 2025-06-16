@@ -11,7 +11,7 @@ set(CMAKE_C_COMPILER   aarch64-linux-gnu-gcc)
 set(CMAKE_CXX_COMPILER aarch64-linux-gnu-g++)
 
 # 4. 指定目标根文件系统（上一步已挂载到 /opt/rk3566-rootfs）
-set(CMAKE_SYSROOT /srv/chroot/ubuntu22-arm64)
+set(CMAKE_SYSROOT /home/xuguocai/chroot/ubuntu22-arm64)
 
 # 5. 告诉 CMake 在查找时以 sysroot 为优先，并设置查找策略
 #    这样 CMake 会优先在 sysroot 下查找头文件和库，不会误用宿主机 x86_64 上的
@@ -34,5 +34,5 @@ set(ENV{PKG_CONFIG_SYSROOT_DIR} ${CMAKE_SYSROOT})
 #)
 
 set(ENV{PKG_CONFIG_LIBDIR}
-    "/srv/chroot/ubuntu22-arm64/usr/lib/aarch64-linux-gnu/pkgconfig:/srv/chroot/ubuntu22-arm64/usr/share/pkgconfig"
+    "/home/xuguocai/chroot/ubuntu22-arm64/usr/lib/aarch64-linux-gnu/pkgconfig:/home/xuguocai/chroot/ubuntu22-arm64/usr/share/pkgconfig"
 )

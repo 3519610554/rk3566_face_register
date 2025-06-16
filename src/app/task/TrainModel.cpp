@@ -6,7 +6,7 @@
 #include <chrono> 
 #include <spdlog/spdlog.h>
 
-#define FACE_MODEL_PATH         "/model/faces/"
+#define FACE_MODEL_PATH         "../assets/model/faces/"
 #define FACE_MODEL_YML          (FACE_MODEL_PATH"face_gather.yml")
 #define FACE_MODEL              (FACE_MODEL_PATH"face_model.xml")
 

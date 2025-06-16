@@ -16,8 +16,7 @@
 
 #define TASK_SWITCH(x)      std::bind(&FaceDetection::x, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 
-#define FONT_PATH           "./font/NotoSansSC-VariableFont_wght.ttf"
-
+#define FONT_PATH           "../assets/font/NotoSansSC-VariableFont_wght.ttf"
 
 FaceDetection::FaceDetection(){
 
@@ -72,7 +71,6 @@ void FaceDetection::dispose_thread(){
         // m_face_task(frame, frame, m_faces);
         cv::imshow("USB Camera", frame);
         cv::waitKey(1);
-        spdlog::info("loop");
     }
 }
 

@@ -2,8 +2,8 @@
 #include "File.h"
 #include <spdlog/spdlog.h>
 
-#define SQL_FILE_PATH           (util::get_currentWorking_directory()+"/sql/")
-#define SQL_FILE                (SQL_FILE_PATH + "UserSQLite.db")
+#define SQL_FILE_PATH           "../sql/"
+#define SQL_FILE                (SQL_FILE_PATH"UserSQLite.db")
 
 UserSQLite::UserSQLite(){
 
@@ -39,8 +39,8 @@ int UserSQLite::get_row_count(){
 
 void UserSQLite::open_sqlite(){
 
-    util::create_file(SQL_FILE_PATH.c_str(), nullptr);
-    int rc = sqlite3_open(SQL_FILE.c_str(), &m_db);
+    util::create_file(SQL_FILE_PATH, nullptr);
+    int rc = sqlite3_open(SQL_FILE, &m_db);
     if (rc){
         spdlog::error("cannot open sqlite: {}", rc);
         return;
