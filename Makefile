@@ -10,22 +10,35 @@ FRAMEWORK_NAME := UVC_Camera
 TOOLCHAIN_FILE := ${PWD}/cmake/arm-toolchain.cmake
 THREAD_NUM := 14
 
+.PHONY: all release debug clean build
+
 all: release
 
 clean:
 	rm -rf ${INSTALL_DIR}
 	rm -rf ${BUILD_DIR}
+
 release:
-	@[ -e ${BUILD_DIR}/.build_ok ] && echo "release compilation completed ..." || mkdir -p ${BUILD_DIR}
+	$(MAKE) build BUILD_TYPE=Release
+
+debug:
+	$(MAKE) build BUILD_TYPE=Debug
+
+build:
+	@[ -e ${BUILD_DIR}/.build_ok ] && echo "$(BUILD_TYPE) compilation completed ..." || mkdir -p ${BUILD_DIR}
 
 	cd ${BUILD_DIR} && \
 	cmake -DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE} \
-		-DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -DFRAMEWORK_NAME=${FRAMEWORK_NAME} ..\
+		-DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
+		-DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+		-DFRAMEWORK_NAME=${FRAMEWORK_NAME} .. \
 	&& \
 	make -j${THREAD_NUM} && make install && cd -
+
 	cp -r assets ${INSTALL_DIR}
 	touch ${BUILD_DIR}/.build_ok
 	patchelf --set-rpath ${INSTALL_DIR}/lib/ ${INSTALL_DIR}/bin/${FRAMEWORK_NAME}
+
 opencv:
 	@[ ! -d ${BUILD_DIR}/opencv ] && git clone https://github.com/opencv/opencv.git --depth=1 ${BUILD_DIR}/opencv || echo "opencv source ready..."
 	@[ ! -d ${BUILD_DIR}/opencv/opencv_contrib-4.x ] && git clone -b 4.x https://github.com/opencv/opencv_contrib.git --depth=1 ${BUILD_DIR}/opencv/opencv_contrib-4.x || echo "opencv_contrib-4.x source ready..."
