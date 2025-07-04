@@ -5,7 +5,6 @@
 #include <cstddef>
 #include <sys/socket.h>
 #include <arpa/inet.h>
-#include <thread>
 #include <json.hpp>
 #include <unordered_map>
 #include <vector>
@@ -23,7 +22,7 @@ public:
     //实例化
     static Socket* Instance();
     //初始化
-    void initialize();
+    void initialize(std::string yaml_path);
     //数据分包
     void data_subpackage(int sockfd, json data);
     //连接成功执行函数
@@ -59,6 +58,9 @@ private:
     std::function<void(int)> m_connect_func;
     std::unordered_map<std::string, std::string> m_recv_dict_buff;
     std::unordered_map<std::string, std::function<void(int, json)>> m_cmd_func;
+
+    int m_local_port;
+    int m_chunk_size;
 };
 
 #endif

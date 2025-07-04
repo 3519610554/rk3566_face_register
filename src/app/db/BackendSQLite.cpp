@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <spdlog/spdlog.h>
 
-#define SQL_FILE_PATH           "../sql/"
+#define SQL_FILE_PATH           "../assets/database/"
 #define SQL_FILE                SQL_FILE_PATH"BackendSQLite.db"
 
 BackendSQLite* BackendSQLite::Instance(){

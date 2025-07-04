@@ -38,9 +38,9 @@ WebConnect* WebConnect::Instance(){
     return &web_connect;
 }
 
-void WebConnect::initialize(){
+void WebConnect::initialize(std::string yaml_path){
 
-    Socket::Instance()->initialize();
+    Socket::Instance()->initialize(yaml_path);
     
 }
 

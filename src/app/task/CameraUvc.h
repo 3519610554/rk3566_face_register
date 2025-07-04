@@ -3,9 +3,6 @@
 
 #include "OpencvPublic.h"
 
-#define CAP_WIDTH                   320
-#define CAP_HEIGHT                  320
-
 class CameraUvc{
 public:
     CameraUvc();
@@ -13,7 +10,7 @@ public:
     //实例化
     static CameraUvc* Instance();
     //初始化
-    void initialize(std::string camera_id = "/dev/video0");
+    void initialize(std::string yaml_path);
     //获取帧照片
     bool frame_get(cv::Mat &frame);
 private:

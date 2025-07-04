@@ -1,14 +1,15 @@
 #include "TrainModel.h"
 #include "File.h"
 #include "ThreadPool.h"
+#include "node/node.h"
+#include "node/parse.h"
 #include <thread>
 #include <utility>
 #include <chrono> 
 #include <spdlog/spdlog.h>
+#include <yaml-cpp/yaml.h>
 
 #define FACE_MODEL_PATH         "../assets/model/faces/"
-#define FACE_MODEL_YML          (FACE_MODEL_PATH"face_gather.yml")
-#define FACE_MODEL              (FACE_MODEL_PATH"face_model.xml")
 
 #define TARIN_WIDTH                 100
 #define TARIN_HEIGHT                100
@@ -35,10 +36,17 @@ TrainModel* TrainModel::Instance(){
     return &train_model;
 }
 
-void TrainModel::initialize(){
+void TrainModel::initialize(std::string yaml_path){
 
-    if (util::file_exist(FACE_MODEL)){
-        m_model->read(FACE_MODEL);
+    YAML::Node config = YAML::LoadFile(yaml_path);
+    m_model_yml = config["face_model_yml"].as<std::string>();
+    m_model_path = config["face_model"].as<std::string>();
+    m_width = config["face_tarin_width"].as<int>();
+    m_heiht = config["face_tarin_height"].as<int>();
+
+
+    if (util::file_exist(m_model_path.c_str())){
+        m_model->read(m_model_path);
         m_model_state.store(true);
     }else {
         m_model_state.store(false);
@@ -52,8 +60,8 @@ void TrainModel::train_model(){
         std::vector<cv::Mat> face_images;
         std::vector<int> face_labels;
         std::pair<std::vector<cv::Mat>, std::vector<int>> data = m_queue.pop();
-        if (util::file_exist(FACE_MODEL_YML)){
-            m_fs.open(FACE_MODEL_YML, cv::FileStorage::READ);
+        if (util::file_exist(m_model_yml.c_str())){
+            m_fs.open(m_model_yml, cv::FileStorage::READ);
             FS_FACES_READ(m_fs, face_images);
             FS_LABELS_READ(m_fs, face_labels);        
             face_images.insert(face_images.end(), data.first.begin(), data.first.end());
@@ -65,13 +73,13 @@ void TrainModel::train_model(){
         }
         cv::Ptr<MPDEL_TRAIN_METHODS> train_model = MPDEL_TRAIN_METHODS::create();
         train_model->train(face_images, face_labels);
-        train_model->save(FACE_MODEL);
+        train_model->save(m_model_path);
         m_model_state.store(false);
         m_model = train_model;
         m_model_state.store(true);
         spdlog::info("train successfuly!");
 
-        m_fs.open(FACE_MODEL_YML, cv::FileStorage::WRITE);
+        m_fs.open(m_model_yml, cv::FileStorage::WRITE);
         FS_FACES_WRITE(m_fs, face_images);
         FS_LABELS_WRITE(m_fs, face_labels);
         m_fs.release();

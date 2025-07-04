@@ -1,4 +1,6 @@
 #include "RnkkInference.h"
+#include "node/node.h"
+#include "node/parse.h"
 #include "spdlog.h"
 #include "File.h"
 #include <spdlog/spdlog.h>
@@ -6,14 +8,9 @@
 #include <fstream>
 #include "image_utils.h"
 #include "image_drawing.h"
-#include "file_utils.h"
-
-#define RNKK_MODEL_PATH     "../assets/model/RetinaFace_mobile320.rknn"
-#define RNKK_WIDTH          640
-#define RNKK_HEIGHT         640
+#include "yaml-cpp/yaml.h"
 
 RnkkInference::RnkkInference(){
-
     memset(&m_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
 }
 
@@ -32,11 +29,16 @@ RnkkInference* RnkkInference::Instance(){
     return &rnkk;
 }
 
-void RnkkInference::initialize(){
+void RnkkInference::initialize(std::string yaml_path){
 
-    int ret = init_retinaface_model(RNKK_MODEL_PATH, &m_rknn_app_ctx);
+    YAML::Node config = YAML::LoadFile(yaml_path)["rknn_model"];
+    m_model_path = config["path"].as<std::string>();
+    m_width = config["input_size"][0].as<int>();
+    m_height = config["input_size"][0].as<int>();
+
+    int ret = init_retinaface_model(m_model_path.c_str(), &m_rknn_app_ctx);
     if (ret != 0){
-        spdlog::error("init_retinaface_model fail! ret={} model_path={}", ret, RNKK_MODEL_PATH);
+        spdlog::error("init_retinaface_model fail! ret={} model_path={}", ret, m_model_path.c_str());
     }
 }
 

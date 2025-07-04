@@ -1,0 +1,20 @@
+camera:
+  id: "/dev/video0"
+  width: 320
+  height: 320
+
+rknn_model:
+  path: "./assets/models/RetinaFace_mobile320.rknn"
+  input_size: [640, 640]
+
+assets:
+  font_path: "../assets/font/NotoSansSC-VariableFont_wght.ttf"
+  face_model_yml: "../assets/model/faces/face_gather.yml"
+  face_model: "../assets/model/faces/face_model.xml"
+  face_tarin_width: 100
+  face_tarin_height: 100
+
+socker:
+  local_port: 8080
+  chunk_size: 512
+  

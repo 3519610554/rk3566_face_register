@@ -11,7 +11,7 @@ public:
     //实例化
     static WebConnect* Instance();
     //初始化
-    void initialize();
+    void initialize(std::string yaml_path);
     //发送图片
     void send_image(int sockfd, int id, std::string time, std::string imageBase64);
     //发送id

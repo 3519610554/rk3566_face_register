@@ -18,7 +18,7 @@ public:
     //实例化
     static TrainModel* Instance();
     //初始化
-    void initialize();
+    void initialize(std::string yaml_path);
     //训练模型
     void train_model();
     //模型图片大小修正
@@ -33,6 +33,10 @@ private:
     cv::Ptr<MPDEL_TRAIN_METHODS> m_model;
     std::atomic<bool> m_model_state;
     SafeQueue<std::pair<std::vector<cv::Mat>, std::vector<int>>> m_queue; 
+    std::string m_model_yml;
+    std::string m_model_path;
+    int m_width;
+    int m_heiht;
 };
 
 #endif

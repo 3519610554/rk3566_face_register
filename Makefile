@@ -7,7 +7,7 @@ CMAKE_STRIP := ${CMAKE_CROSS}strip
 CMAKE_C_COMPILER := ${CMAKE_CROSS}gcc
 CMAKE_CXX_COMPILER := ${CMAKE_CROSS}g++
 FRAMEWORK_NAME := UVC_Camera
-TOOLCHAIN_FILE := ${PWD}/cmake/arm-toolchain.cmake
+TOOLCHAIN_FILE := ${PWD}/scripts/arm-toolchain.cmake
 THREAD_NUM := 14
 
 .PHONY: all release debug clean build
@@ -35,7 +35,7 @@ build:
 	&& \
 	make -j${THREAD_NUM} && make install && cd -
 
-	cp -r assets ${INSTALL_DIR}
+	cp -r assets config ${INSTALL_DIR}
 	touch ${BUILD_DIR}/.build_ok
 	patchelf --set-rpath ${INSTALL_DIR}/lib/ ${INSTALL_DIR}/bin/${FRAMEWORK_NAME}
 
@@ -98,3 +98,13 @@ rknn:
 
 	cp -r ${BUILD_DIR}/rknn/rknpu2/runtime/Linux/librknn_api/include/*.h ${INSTALL_DIR}/include/rknn
 	cp -r ${BUILD_DIR}/rknn/rknpu2/runtime/Linux/librknn_api/aarch64/*.so ${INSTALL_DIR}/lib
+
+yaml-cpp: 
+	@[ ! -d ${BUILD_DIR}/yaml-cpp ] && git clone https://github.com/jbeder/yaml-cpp.git --depth=1 ${BUILD_DIR}/yaml-cpp || echo "yaml-cpp source ready..."
+	@[ -e ${BUILD_DIR}/yaml-cpp/.build_ok ] && echo "yaml-cpp compilation completed..." || mkdir -p ${BUILD_DIR}/yaml-cpp/build 
+
+	cd ${BUILD_DIR}/yaml-cpp/build && \
+	cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
+		-DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE} .. && \
+	make -j$(nproc) && sudo make install && cd -
+	touch ${BUILD_DIR}/yaml-cpp/.build_ok

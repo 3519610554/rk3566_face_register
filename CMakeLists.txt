@@ -31,6 +31,9 @@ message(STATUS "CMAKE_SYSTEM_PROCESSOR: ${CMAKE_SYSTEM_PROCESSOR}")
 set(DEP_SOURCE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty)
 message(STATUS "DEP_SOURCE_PATH: ${DEP_SOURCE_PATH}")
 
+#全局头文件
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+
 #librga
 set(LIBRGA_API_PATH ${DEP_SOURCE_PATH}/librga)
 include_directories( ${LIBRGA_API_PATH}/include)
@@ -83,6 +86,9 @@ include_directories(${CMAKE_INSTALL_PREFIX}/include/rknn)
 
 #spdlog
 include_directories(${CMAKE_INSTALL_PREFIX}/include/spdlog)
+
+#yaml-cpp
+include_directories(${CMAKE_INSTALL_PREFIX}/include/yaml-cpp)
 
 message(STATUS ${CMAKE_CURRENT_SOURCE_DIR})
 

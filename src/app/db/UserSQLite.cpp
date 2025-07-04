@@ -2,7 +2,7 @@
 #include "File.h"
 #include <spdlog/spdlog.h>
 
-#define SQL_FILE_PATH           "../sql/"
+#define SQL_FILE_PATH           "../assets/database/"
 #define SQL_FILE                (SQL_FILE_PATH"UserSQLite.db")
 
 UserSQLite::UserSQLite(){

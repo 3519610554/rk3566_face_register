@@ -37,6 +37,7 @@ set(EXTRA_LIBS
     pthread            
     dl
     stdc++
+    yaml-cpp
 )
 
 target_link_libraries(${FRAMEWORK_NAME}

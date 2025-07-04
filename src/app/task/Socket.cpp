@@ -5,15 +5,14 @@
 #include <unistd.h>
 #include <utility>
 #include <vector>
-#include <chrono> 
 #include <cstdio>
-#include <netinet/tcp.h> 
 #include <spdlog/spdlog.h>
+#include <netinet/tcp.h> 
+#include <yaml-cpp/yaml.h>
 #include "ThreadPool.h"
 #include "HashBase62.h"
-
-#define LOCAL_PORT                  8080
-#define CHUNK_SIZE                  512
+#include "node/node.h"
+#include "node/parse.h"
 
 Socket::Socket(){
     
@@ -36,11 +35,15 @@ Socket* Socket::Instance(){
     return &socket_client;
 }
 
-void Socket::initialize(){
+void Socket::initialize(std::string yaml_path){
+
+    YAML::Node socker = YAML::LoadFile(yaml_path);
+    m_local_port = socker["local_port"].as<int>();
+    m_chunk_size = socker["local_port"].as<int>();
 
     m_sock = socket(AF_INET, SOCK_STREAM, 0);
     m_sa.sin_family = AF_INET;
-    m_sa.sin_port = htons(LOCAL_PORT);
+    m_sa.sin_port = htons(m_local_port);
     set_keepalive();
     if (bind(m_sock, (struct sockaddr*)&m_sa, sizeof(m_sa)) < 0){
         spdlog::error("bind failed");
@@ -68,7 +71,7 @@ void Socket::data_subpackage(int sockfd, json data){
 
     std::string json_str = data.dump();
     size_t total_size = json_str.size();
-    size_t chunk_size = CHUNK_SIZE;
+    size_t chunk_size = m_chunk_size;
     size_t num_chunks = (total_size + chunk_size - 1) / chunk_size;
     std::string hash_base62 = util::generateTimeHashString();
 

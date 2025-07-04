@@ -3,7 +3,6 @@
 
 #include "OpencvPublic.h"
 #include "SafeQueue.h"
-#include <thread>
 #include <vector>
 
 class FaceDetection{
@@ -13,7 +12,7 @@ public:
     //实例化
     static FaceDetection* Instance();
     //初始化
-    void initialize();
+    void initialize(std::string yaml_path);
     //添加处理帧
     void frame_data_add(cv::Mat frame);
     //人脸录入

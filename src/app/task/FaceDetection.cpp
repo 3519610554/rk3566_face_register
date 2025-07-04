@@ -1,5 +1,4 @@
 #include "FaceDetection.h"
-#include "File.h"
 #include "Socket.h"
 #include "TrainModel.h"
 #include "UserSQLite.h"
@@ -8,15 +7,12 @@
 #include "ThreadPool.h"
 #include "Base64.h"
 #include "LocalTime.h"
-#include "opencv2/core/mat.hpp"
-#include <cstddef>
-#include <sys/types.h>
-#include <spdlog/spdlog.h>
 #include "RnkkInference.h"
+#include <cstddef>
+#include <spdlog/spdlog.h>
+#include <yaml-cpp/yaml.h>
 
 #define TASK_SWITCH(x)      std::bind(&FaceDetection::x, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-
-#define FONT_PATH           "../assets/font/NotoSansSC-VariableFont_wght.ttf"
 
 FaceDetection::FaceDetection(){
 
@@ -37,12 +33,14 @@ FaceDetection* FaceDetection::Instance(){
     return &face_detection;
 }
 
-void FaceDetection::initialize(){
+void FaceDetection::initialize(std::string yaml_path){
+    YAML::Node assets = YAML::LoadFile(yaml_path)["assets"];
+    std::string font_path = assets[std::string("font_path")].as<std::string>();
 
     m_ft2 = cv::freetype::createFreeType2();
-    m_ft2->loadFontData(FONT_PATH, 0);
+    m_ft2->loadFontData(font_path, 0);
     ThreadPool::Instance()->enqueue(&FaceDetection::dispose_thread, this);
-    RnkkInference::Instance()->initialize();
+    RnkkInference::Instance()->initialize(yaml_path);
 }
 
 size_t FaceDetection::detection_faces(cv::Mat image, std::vector<cv::Rect> &objects){

@@ -11,20 +11,13 @@
 ├── assets/ # 资源文件
 │ ├── font/ # 字体文件
 │ └── model/ # 人脸识别模型文件
+│ └── database/ # SQLite 数据库存放目录
 │
 ├── build/ # 编译输出目录
-│ ├── CMakeFiles/ # CMake 生成的中间文件
-│ ├── opencv/ # OpenCV 相关构建文件
-│ ├── rknn/ # RKNN（神经网络）相关构建文件
-│ ├── spdlog/ # 日志库 spdlog 的构建文件
-│ ├── sqlite/ # SQLite 数据库相关构建文件
-│ └── src/ # 源代码编译输出文件
 │
-├── cmake/ # 自定义 CMake 模块和脚本
+├── scripts/ # 自定义 CMake 模块和脚本
 │
 ├── config/ # 项目配置文件（如摄像头参数、系统配置等）
-│
-├── database/ # SQLite 数据库存放目录
 │
 ├── docs/ # 项目相关文档
 │
@@ -34,14 +27,8 @@
 │ └── app/ # 应用程序主代码
 │
 ├── target/ # 最终目标文件目录
-│ ├── bin/ # 可执行文件
-│ ├── include/ # 头文件（库暴露接口）
-│ ├── lib/ # 静态/动态库文件
-│ └── share/ # 共享资源文件
 │
 └── web/ # Web 前端相关目录
-├── static/ # 静态资源（js、css、图片等）
-└── templates/ # HTML 模板文件
 ```
 
 

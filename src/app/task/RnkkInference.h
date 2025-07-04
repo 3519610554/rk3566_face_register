@@ -14,12 +14,15 @@ public:
     RnkkInference();
     ~RnkkInference();
     static RnkkInference* Instance();
-    void initialize();
+    void initialize(std::string yaml_path);
     void detection_face(cv::Mat image, std::vector<cv::Rect> &object);
 protected:
     void cvMat_to_imageBuffer(cv::Mat& mat, image_buffer_t* image);
 private:
     rknn_app_context_t m_rknn_app_ctx;
+    std::string m_model_path;
+    int m_width;
+    int m_height;
 };
 
 #endif
