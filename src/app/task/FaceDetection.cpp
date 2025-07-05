@@ -45,7 +45,7 @@ void FaceDetection::initialize(std::string yaml_path){
 
 size_t FaceDetection::detection_faces(cv::Mat image, std::vector<cv::Rect> &objects){
 
-    if (++m_frame_interval_cnt < 7)
+    if (++m_frame_interval_cnt < 5)
         return objects.size();
     m_frame_interval_cnt = 0;
     objects.clear();

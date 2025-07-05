@@ -1,11 +1,11 @@
 camera:
   id: "/dev/video0"
-  width: 640
-  height: 640
+  width: 320
+  height: 320
 
 rknn_model:
   path: "../assets/model/RetinaFace_mobile320.rknn"
-  input_size: [640, 640]
+  input_size: [320, 320]
 
 assets:
   font_path: "../assets/font/NotoSansSC-VariableFont_wght.ttf"

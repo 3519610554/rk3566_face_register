@@ -54,6 +54,7 @@ opencv:
 		-DBUILD_opencv_calib3d=ON -DBUILD_opencv_dnn=ON -DBUILD_opencv_features2d=ON \
 		-DBUILD_opencv_flann=ON -DBUILD_opencv_gapi=OFF -DBUILD_opencv_ml=OFF \
 		-DWITH_GSTREAMER=OFF -DWITH_JAVA=OFF -DOPENCV_ENABLE_FREE=ON \
+		-DWITH_JPEG=ON \
 		-DBUILD_opencv_stitching=OFF -DBUILD_opencv_python2=OFF -DBUILD_opencv_python3=OFF \
 		-DWITH_FREETYPE=ON -DOPENCV_EXTRA_MODULES_PATH=../opencv_contrib-4.x/modules \
 		-DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
