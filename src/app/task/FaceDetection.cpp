@@ -45,7 +45,7 @@ void FaceDetection::initialize(std::string yaml_path){
 
 size_t FaceDetection::detection_faces(cv::Mat image, std::vector<cv::Rect> &objects){
 
-    if (++m_frame_interval_cnt < 3)
+    if (++m_frame_interval_cnt < 7)
         return objects.size();
     m_frame_interval_cnt = 0;
     objects.clear();
@@ -63,10 +63,10 @@ void FaceDetection::dispose_thread(){
 
     while(true){
         cv::Mat frame = m_frame.pop();
-        // cv::Mat gray;
-        // cv::cvtColor(frame, gray, cv::COLOR_RGBA2RGB);
-        // detection_faces(frame, m_faces);
-        // m_face_task(frame, frame, m_faces);
+        cv::Mat gray;
+        cv::cvtColor(frame, gray, cv::COLOR_RGBA2RGB);
+        detection_faces(frame, m_faces);
+        m_face_task(frame, frame, m_faces);
         cv::imshow("USB Camera", frame);
         cv::waitKey(1);
     }

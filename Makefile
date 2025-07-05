@@ -18,12 +18,6 @@ clean:
 	rm -rf ${INSTALL_DIR}
 	rm -rf ${BUILD_DIR}
 
-release:
-	$(MAKE) build BUILD_TYPE=Release
-
-debug:
-	$(MAKE) build BUILD_TYPE=Debug
-
 build:
 	@[ -e ${BUILD_DIR}/.build_ok ] && echo "$(BUILD_TYPE) compilation completed ..." || mkdir -p ${BUILD_DIR}
 
@@ -38,6 +32,12 @@ build:
 	cp -r assets config ${INSTALL_DIR}
 	touch ${BUILD_DIR}/.build_ok
 	patchelf --set-rpath ${INSTALL_DIR}/lib/ ${INSTALL_DIR}/bin/${FRAMEWORK_NAME}
+
+release:
+	$(MAKE) build BUILD_TYPE=Release
+
+debug:
+	$(MAKE) build BUILD_TYPE=Debug
 
 opencv:
 	@[ ! -d ${BUILD_DIR}/opencv ] && git clone https://github.com/opencv/opencv.git --depth=1 ${BUILD_DIR}/opencv || echo "opencv source ready..."
@@ -74,15 +74,6 @@ sqlite:
 		--includedir=${INSTALL_DIR}/include/sqlite && \
 	make -j${THREAD_NUM} && sudo make install && cd -
 
-libcurl:
-	@[ ! -d ${BUILD_DIR}/libcurl ] && git clone https://github.com/curl/curl.git --depth=1 ${BUILD_DIR}/libcurl || echo "libcurl source ready..."
-	@[ -e ${BUILD_DIR}/libcurl/.build_ok ] && echo "libcurl compilation completed..." || mkdir -p ${BUILD_DIR}/libcurl/build 
-
-	cd ${BUILD_DIR}/libcurl/build && \
-	cmake .. -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} && \
-	make -j$(nproc) && sudo make install && cd -
-	touch ${BUILD_DIR}/libcurl/.build_ok
-
 json:
 	@[ ! -d ${INSTALL_DIR}/include/json ] echo "json include exist" || mkdir -p ${INSTALL_DIR}/include/json
 	wget https://github.com/nlohmann/json/releases/download/v3.12.0/json.hpp -P ${INSTALL_DIR}/include/json
@@ -108,3 +99,10 @@ yaml-cpp:
 		-DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE} .. && \
 	make -j$(nproc) && sudo make install && cd -
 	touch ${BUILD_DIR}/yaml-cpp/.build_ok
+
+mpp:
+	mkdir -p 3rdparty/mpp/build_rk3566 && \
+	cd 3rdparty/mpp/build_rk3566 && \
+	cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
+		-DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE} .. && \
+	make -j$(nproc) && sudo make install && cd -

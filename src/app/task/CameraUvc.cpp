@@ -25,20 +25,18 @@ CameraUvc* CameraUvc::Instance(){
 
 void CameraUvc::initialize(std::string yaml_path){
     YAML::Node camera = YAML::LoadFile(yaml_path)["camera"];
-    std::string camera_id = camera["id"].as<std::string>();
-    int width = camera["width"].as<int>();
-    int height = camera["height"].as<int>();
-
-
-    m_cap = cv::VideoCapture(camera_id, cv::CAP_V4L2);
+    m_camera_id = camera["id"].as<std::string>();
+    m_camera_width = camera["width"].as<int>();
+    m_camera_height = camera["height"].as<int>();
+    m_cap = cv::VideoCapture(m_camera_id, cv::CAP_V4L2);
     // 设置摄像头参数：MJPG + 分辨率 + 帧率
     m_cap.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('Y', 'U', 'Y', 'V'));
-    m_cap.set(cv::CAP_PROP_FRAME_WIDTH, width);
-    m_cap.set(cv::CAP_PROP_FRAME_HEIGHT, height);
+    m_cap.set(cv::CAP_PROP_FRAME_WIDTH, m_camera_width);
+    m_cap.set(cv::CAP_PROP_FRAME_HEIGHT, m_camera_height);
     m_cap.set(cv::CAP_PROP_FPS, 30);
     setenv("DISPLAY", ":10.0", 1);
 
-    spdlog::info("Camera fps: {}, width: {}, height: {}", m_cap.get(cv::CAP_PROP_FPS), width, height);
+    spdlog::info("Camera fps: {}, m_camera_width: {}, m_camera_height: {}", m_cap.get(cv::CAP_PROP_FPS), m_camera_width, m_camera_height);
 }
 
 bool CameraUvc::frame_get(cv::Mat &frame){

@@ -19,7 +19,6 @@ Socket::Socket(){
 }
 
 Socket::~Socket(){
-    
     for (auto& client : m_clients){
         shutdown(client, SHUT_RDWR);
         close(client);
@@ -37,9 +36,11 @@ Socket* Socket::Instance(){
 
 void Socket::initialize(std::string yaml_path){
 
-    YAML::Node socker = YAML::LoadFile(yaml_path);
+    YAML::Node socker = YAML::LoadFile(yaml_path)["socker"];
     m_local_port = socker["local_port"].as<int>();
-    m_chunk_size = socker["local_port"].as<int>();
+    m_chunk_size = socker["chunk_size"].as<int>();
+
+    spdlog::info("port: {}, chunk: {}", m_local_port, m_chunk_size);
 
     m_sock = socket(AF_INET, SOCK_STREAM, 0);
     m_sa.sin_family = AF_INET;

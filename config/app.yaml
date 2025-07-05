@@ -4,7 +4,7 @@ camera:
   height: 320
 
 rknn_model:
-  path: "./assets/models/RetinaFace_mobile320.rknn"
+  path: "../assets/model/RetinaFace_mobile320.rknn"
   input_size: [640, 640]
 
 assets:
@@ -15,6 +15,5 @@ assets:
   face_tarin_height: 100
 
 socker:
-  local_port: 8080
+  local_port: 8000
   chunk_size: 512
-  

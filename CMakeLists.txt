@@ -75,9 +75,6 @@ endif()
 #sqlite
 include_directories(${CMAKE_INSTALL_PREFIX}/include/sqlite)
 
-#curl
-# include_directories(${CMAKE_INSTALL_PREFIX}/include/curl)
-
 #json
 include_directories(${CMAKE_INSTALL_PREFIX}/include/json)
 
@@ -89,6 +86,9 @@ include_directories(${CMAKE_INSTALL_PREFIX}/include/spdlog)
 
 #yaml-cpp
 include_directories(${CMAKE_INSTALL_PREFIX}/include/yaml-cpp)
+
+#rockchip
+include_directories(${CMAKE_INSTALL_PREFIX}/include/rockchip)
 
 message(STATUS ${CMAKE_CURRENT_SOURCE_DIR})
 

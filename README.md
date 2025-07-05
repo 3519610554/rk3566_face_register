@@ -68,3 +68,11 @@
 
 - **web/**  
   Web 服务器相关文件夹，包含 Python 缓存、静态文件和 HTML 模板，用于项目中可能的前端界面。
+
+---
+
+## 需要安装的依赖
+
+```bash
+sudo apt-get install build-essential cmake libdrm-dev libpthread-stubs0-dev
+```

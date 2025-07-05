@@ -15,6 +15,9 @@ public:
     bool frame_get(cv::Mat &frame);
 private:
     cv::VideoCapture m_cap;
+    std::string m_camera_id;
+    int m_camera_width;
+    int m_camera_height;
 };
 
 #endif

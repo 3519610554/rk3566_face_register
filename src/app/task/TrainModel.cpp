@@ -38,12 +38,11 @@ TrainModel* TrainModel::Instance(){
 
 void TrainModel::initialize(std::string yaml_path){
 
-    YAML::Node config = YAML::LoadFile(yaml_path);
-    m_model_yml = config["face_model_yml"].as<std::string>();
-    m_model_path = config["face_model"].as<std::string>();
-    m_width = config["face_tarin_width"].as<int>();
-    m_heiht = config["face_tarin_height"].as<int>();
-
+    YAML::Node assets = YAML::LoadFile(yaml_path)["assets"];
+    m_model_yml = assets["face_model_yml"].as<std::string>();
+    m_model_path = assets["face_model"].as<std::string>();
+    m_width = assets["face_tarin_width"].as<int>();
+    m_heiht = assets["face_tarin_height"].as<int>();
 
     if (util::file_exist(m_model_path.c_str())){
         m_model->read(m_model_path);
