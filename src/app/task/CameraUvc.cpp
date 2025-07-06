@@ -9,6 +9,7 @@
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <memory>
 
 CameraUvc::CameraUvc(): 
     m_buffer_count(4),
@@ -134,6 +135,10 @@ void CameraUvc::initialize(std::string yaml_path){
     // 预分配解码缓冲区和 Mat
     m_dstBuf .resize(m_width * m_height * 3);
     m_frameMat = cv::Mat(m_height, m_width, CV_8UC3, m_dstBuf.data());
+
+    // if (!m_mppDecoder.init(m_width, m_height)) {
+    //     spdlog::error("MPP JPEG decoder init failed");
+    // }
 }
 
 bool CameraUvc::frame_get(cv::Mat &frame){
@@ -169,9 +174,14 @@ bool CameraUvc::frame_get(cv::Mat &frame){
         ioctl(m_fd, VIDIOC_QBUF, &buf);
         return false;
     }
+    // if (!m_mppDecoder.decode(data, length, m_dstBuf.data())) {
+    //     spdlog::error("MPP JPEG decode failed");
+    //     ioctl(m_fd, VIDIOC_QBUF, &buf);
+    //     return false;
+    // }
 
     //3) 返回预分配好的 Mat
-    frame = m_frameMat;
+    cv::flip(m_frameMat, frame, 1);
 
     //4) QBUF
     ioctl(m_fd, VIDIOC_QBUF, &buf);

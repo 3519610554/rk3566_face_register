@@ -38,10 +38,12 @@ set(EXTRA_LIBS
     dl
     stdc++
     yaml-cpp
+    rockchip_mpp
+    rga
+    turbojpeg
 )
 
 target_link_libraries(${FRAMEWORK_NAME}
-    pthread
     ${LIBRGA_LIB}
     ${JPEG_TURBO_LIB}
     ${EXTRA_LIBS}

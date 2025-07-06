@@ -34,19 +34,9 @@ message(STATUS "DEP_SOURCE_PATH: ${DEP_SOURCE_PATH}")
 #全局头文件
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-#librga
-set(LIBRGA_API_PATH ${DEP_SOURCE_PATH}/librga)
-include_directories( ${LIBRGA_API_PATH}/include)
-set(LIBRGA_LIB ${LIBRGA_API_PATH}/lib/librga.a)
-
 #stb_image
 set(STD_IMAGE_API_PATH ${DEP_SOURCE_PATH}/stb_image)
 include_directories( ${STD_IMAGE_API_PATH}/include)
-
-#jpeg_turbo
-set(JPEG_TURBO_API_PATH ${DEP_SOURCE_PATH}/jpeg_turbo)
-include_directories( ${JPEG_TURBO_API_PATH}/include)
-set(JPEG_TURBO_LIB ${JPEG_TURBO_API_PATH}/lib/libturbojpeg.a)
 
 #target
 include_directories(${CMAKE_INSTALL_PREFIX}/include)
@@ -89,6 +79,12 @@ include_directories(${CMAKE_INSTALL_PREFIX}/include/yaml-cpp)
 
 #rockchip
 include_directories(${CMAKE_INSTALL_PREFIX}/include/rockchip)
+
+#jpeg_turbo
+include_directories( ${CMAKE_INSTALL_PREFIX}/include/jpeg_turbo)
+
+#librga
+include_directories( ${CMAKE_INSTALL_PREFIX}/include/librga)
 
 message(STATUS ${CMAKE_CURRENT_SOURCE_DIR})
 

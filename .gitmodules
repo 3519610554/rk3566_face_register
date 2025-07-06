@@ -1,3 +1,30 @@
 [submodule "3rdparty/mpp"]
 	path = 3rdparty/mpp
 	url = https://github.com/rockchip-linux/mpp
+[submodule "3rdparty/opencv"]
+	path = 3rdparty/opencv
+	url = https://github.com/opencv/opencv.git
+[submodule "3rdparty/opencv_contrib-4.x"]
+	path = 3rdparty/opencv_contrib-4.x
+	url = https://github.com/opencv/opencv_contrib.git
+[submodule "3rdparty/sqlite"]
+	path = 3rdparty/sqlite
+	url = https://github.com/sqlite/sqlite.git
+[submodule "3rdparty/spdlog"]
+	path = 3rdparty/spdlog
+	url = https://github.com/gabime/spdlog.git
+[submodule "3rdparty/rknn"]
+	path = 3rdparty/rknn
+	url = https://github.com/airockchip/rknn-toolkit2.git
+[submodule "3rdparty/yaml-cpp"]
+	path = 3rdparty/yaml-cpp
+	url = https://github.com/jbeder/yaml-cpp.git
+[submodule "3rdparty/librga"]
+	path = 3rdparty/librga
+	url = https://github.com/airockchip/librga.git
+[submodule "3rdparty/jpeg_turbo"]
+	path = 3rdparty/jpeg_turbo
+	url = https://github.com/libjpeg-turbo/libjpeg-turbo.git
+[submodule "3rdparty/json"]
+	path = 3rdparty/json
+	url = https://github.com/nlohmann/json.git

@@ -5,7 +5,7 @@
 #include <cstddef>
 #include <sys/socket.h>
 #include <arpa/inet.h>
-#include <json.hpp>
+#include <nlohmann/json.hpp>
 #include <unordered_map>
 #include <vector>
 #include "SafeQueue.h"

@@ -71,8 +71,30 @@
 
 ---
 
-## 需要安装的依赖
+## 初始化子仓库
+```bash
+git submodule update --init --recursive
+```
 
+## 需要安装的依赖
 ```bash
 sudo apt-get install build-essential cmake libdrm-dev libpthread-stubs0-dev
+```
+
+## 交叉编译完成后运行在目标板
+
+1. 同步文件到目标板
+```bash
+rsync -avz ./target/ root@<ip>:/root/target/
+```
+
+2. 设置临时运行库路径
+```bash
+export LD_LIBRARY_PATH=/root/target/lib:$LD_LIBRARY_PATH
+```
+
+3. 开始运行
+```bash
+cd /root/target/bin
+./UVC_Camera
 ```

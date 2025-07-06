@@ -1,13 +1,14 @@
 CMAKE_CROSS := 
 
-ROOT_DIR := ${PWD}
-INSTALL_DIR	:= ${PWD}/target
-BUILD_DIR	:= ${PWD}/build
 CMAKE_STRIP := ${CMAKE_CROSS}strip
 CMAKE_C_COMPILER := ${CMAKE_CROSS}gcc
 CMAKE_CXX_COMPILER := ${CMAKE_CROSS}g++
+ROOT_DIR := ${PWD}
+INSTALL_DIR	:= ${ROOT_DIR}/target
+BUILD_DIR	:= ${ROOT_DIR}/build
+THIRD_PARTY_DIR := ${ROOT_DIR}/3rdparty
+TOOLCHAIN_FILE := ${ROOT_DIR}/scripts/arm-toolchain.cmake
 FRAMEWORK_NAME := UVC_Camera
-TOOLCHAIN_FILE := ${PWD}/scripts/arm-toolchain.cmake
 THREAD_NUM := 14
 
 .PHONY: all release debug clean build
@@ -40,11 +41,9 @@ debug:
 	$(MAKE) build BUILD_TYPE=Debug
 
 opencv:
-	@[ ! -d ${BUILD_DIR}/opencv ] && git clone https://github.com/opencv/opencv.git --depth=1 ${BUILD_DIR}/opencv || echo "opencv source ready..."
-	@[ ! -d ${BUILD_DIR}/opencv/opencv_contrib-4.x ] && git clone -b 4.x https://github.com/opencv/opencv_contrib.git --depth=1 ${BUILD_DIR}/opencv/opencv_contrib-4.x || echo "opencv_contrib-4.x source ready..."
-	@[ -e ${BUILD_DIR}/opencv/.build_ok ] && echo "opencv compilation completed..." || mkdir -p ${BUILD_DIR}/opencv/build 
+	@[ -e ${BUILD_DIR}/$@/.build_ok ] && echo "$@ compilation completed..." || mkdir -p ${BUILD_DIR}/$@ 
 
-	cd ${BUILD_DIR}/opencv/build && \
+	cd ${BUILD_DIR}/$@ && \
 	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE} \
 		-DSMALL_LOCALSIZE=ON -DENABLE_FAST_MATH=ON -DWITH_IPP=OFF \
 		-DUSE_O3=ON -DENABLE_CXX11=ON -DWITH_TBB=ON -DWITH_OPENMP=ON -DBUILD_EXAMPLES=OFF -DBUILD_DOCS=OFF -DWITH_WEBP=OFF \
@@ -56,54 +55,71 @@ opencv:
 		-DWITH_GSTREAMER=OFF -DWITH_JAVA=OFF -DOPENCV_ENABLE_FREE=ON \
 		-DWITH_JPEG=ON \
 		-DBUILD_opencv_stitching=OFF -DBUILD_opencv_python2=OFF -DBUILD_opencv_python3=OFF \
-		-DWITH_FREETYPE=ON -DOPENCV_EXTRA_MODULES_PATH=../opencv_contrib-4.x/modules \
+		-DWITH_FREETYPE=ON -DOPENCV_EXTRA_MODULES_PATH=$(THIRD_PARTY_DIR)/opencv_contrib-4.x/modules \
 		-DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
-		-DINSTALL_DIR=${INSTALL_DIR} ${BUILD_DIR}/opencv && \
+		-DINSTALL_DIR=${INSTALL_DIR} ${BUILD_DIR}/$@ $(THIRD_PARTY_DIR)/$@ && \
 	make -j${THREAD_NUM} && make install && cd -
-	touch ${BUILD_DIR}/opencv/.build_ok
+	touch ${BUILD_DIR}/$@/.build_ok
 
 sqlite:
-	@[ ! -d ${BUILD_DIR}/sqlite ] && wget https://sqlite.org/2025/sqlite-autoconf-3490100.tar.gz -O "${BUILD_DIR}/sqlite.tar.gz" -P ${BUILD_DIR} || echo "sqlite source ready..."
-	@[ -f ${BUILD_DIR}/sqlite.tar.gz ] && { \
-    tar -xzf ${BUILD_DIR}/sqlite.tar.gz -C ${BUILD_DIR} && \
-		rm -f ${BUILD_DIR}/sqlite.tar.gz && \
-		mv ${BUILD_DIR}/sqlite-autoconf-3490100 ${BUILD_DIR}/sqlite; \
-	} || echo "sqlite.tar.gz missing, skipping extraction"
-	cd ${BUILD_DIR}/sqlite && \
-	./configure --host=aarch64-linux-gnu \
+	@[ -e ${BUILD_DIR}/$@/.build_ok ] && echo "$@ compilation completed..." || mkdir -p ${BUILD_DIR}/$@ 
+
+	cd ${BUILD_DIR}/$@ && \
+	$(THIRD_PARTY_DIR)/$@/configure \
+		--host=aarch64-linux-gnu \
 		--prefix=${INSTALL_DIR} \
-		--includedir=${INSTALL_DIR}/include/sqlite && \
+		--disable-tcl \
+		--includedir=${INSTALL_DIR}/include/$@ && \
 	make -j${THREAD_NUM} && sudo make install && cd -
 
 json:
-	@[ ! -d ${INSTALL_DIR}/include/json ] echo "json include exist" || mkdir -p ${INSTALL_DIR}/include/json
-	wget https://github.com/nlohmann/json/releases/download/v3.12.0/json.hpp -P ${INSTALL_DIR}/include/json
+	cp -r ${THIRD_PARTY_DIR}/$@/single_include/$@ ${INSTALL_DIR}/include/$@
 	
 spdlog:
-	@[ ! -d ${BUILD_DIR}/spdlog ] && git clone https://github.com/gabime/spdlog.git --depth=1 ${BUILD_DIR}/spdlog || echo "spdlog source ready..."
-
-	cp -r ${BUILD_DIR}/spdlog/include/spdlog ${INSTALL_DIR}/include/spdlog
+	cp -r ${THIRD_PARTY_DIR}/$@/include/$@ ${INSTALL_DIR}/include/$@
 
 rknn:
-	@[ ! -d ${BUILD_DIR}/rknn ] && git clone https://github.com/airockchip/rknn-toolkit2.git --depth=1 ${BUILD_DIR}/rknn || echo "rknn source ready..."
-	@[ ! -d ${INSTALL_DIR}/include/rknn ] echo "rknn include exist" || mkdir -p ${INSTALL_DIR}/include/rknn
+	@[ ! -d ${INSTALL_DIR}/include/$@ ] echo "$@ include exist" || mkdir -p ${INSTALL_DIR}/include/$@
 
-	cp -r ${BUILD_DIR}/rknn/rknpu2/runtime/Linux/librknn_api/include/*.h ${INSTALL_DIR}/include/rknn
-	cp -r ${BUILD_DIR}/rknn/rknpu2/runtime/Linux/librknn_api/aarch64/*.so ${INSTALL_DIR}/lib
+	cp -r ${THIRD_PARTY_DIR}/$@/rknpu2/runtime/Linux/librknn_api/include/*.h ${INSTALL_DIR}/include/$@
+	cp -r ${THIRD_PARTY_DIR}/$@/rknpu2/runtime/Linux/librknn_api/aarch64/*.so ${INSTALL_DIR}/lib
 
 yaml-cpp: 
-	@[ ! -d ${BUILD_DIR}/yaml-cpp ] && git clone https://github.com/jbeder/yaml-cpp.git --depth=1 ${BUILD_DIR}/yaml-cpp || echo "yaml-cpp source ready..."
-	@[ -e ${BUILD_DIR}/yaml-cpp/.build_ok ] && echo "yaml-cpp compilation completed..." || mkdir -p ${BUILD_DIR}/yaml-cpp/build 
+	@[ -e ${BUILD_DIR}/$@/.build_ok ] && echo "$@ compilation completed..." || mkdir -p ${BUILD_DIR}/$@
 
-	cd ${BUILD_DIR}/yaml-cpp/build && \
-	cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
-		-DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE} .. && \
+	cd ${BUILD_DIR}/$@ && \
+	cmake \
+		-DCMAKE_INSTALL_INCLUDEDIR=${INSTALL_DIR}/include/$@ \
+		-DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
+		-DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE} \
+		$(THIRD_PARTY_DIR)/$@ && \
 	make -j$(nproc) && sudo make install && cd -
-	touch ${BUILD_DIR}/yaml-cpp/.build_ok
+	touch ${BUILD_DIR}/$@/.build_ok
 
 mpp:
-	mkdir -p 3rdparty/mpp/build_rk3566 && \
-	cd 3rdparty/mpp/build_rk3566 && \
+	@[ -e ${BUILD_DIR}/$@/.build_ok ] && echo "$@ compilation completed..." || mkdir -p ${BUILD_DIR}/$@
+
+	cd $(BUILD_DIR)/$@ && \
 	cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
-		-DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE} .. && \
+		-DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE} $(THIRD_PARTY_DIR)/$@ && \
 	make -j$(nproc) && sudo make install && cd -
+
+jpeg_turbo:
+	@[ -e ${BUILD_DIR}/$@/.build_ok ] && echo "$@ compilation completed..." || mkdir -p ${BUILD_DIR}/$@
+
+	cd $(BUILD_DIR)/$@ && \
+	cmake \
+		-DCMAKE_INSTALL_INCLUDEDIR=${INSTALL_DIR}/include/$@ \
+		-DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
+		-DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE} \
+		-DENABLE_SHARED=ON \
+		-DENABLE_STATIC=OFF \
+		-DENABLE_TURBOJPEG=ON \
+		$(THIRD_PARTY_DIR)/$@ && \
+	make -j$(nproc) && sudo make install && cd -
+
+librga:
+	@[ -d ${INSTALL_DIR}/include/$@ ] && echo "$@ compilation completed..." || mkdir -p ${INSTALL_DIR}/include/$@
+
+	cp -r ${THIRD_PARTY_DIR}/$@/include/* ${INSTALL_DIR}/include/$@
+	cp -r ${THIRD_PARTY_DIR}/$@/libs/Linux/gcc-aarch64/*.so ${INSTALL_DIR}/lib
