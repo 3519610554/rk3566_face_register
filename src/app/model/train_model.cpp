@@ -1,6 +1,6 @@
-#include "TrainModel.h"
-#include "File.h"
-#include "ThreadPool.h"
+#include "train_model.h"
+#include "file_cpp.h"
+#include "thread_pool.h"
 #include <thread>
 #include <utility>
 #include <chrono> 

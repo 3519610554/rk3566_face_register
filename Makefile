@@ -9,7 +9,7 @@ BUILD_DIR	:= ${ROOT_DIR}/build
 THIRD_PARTY_DIR := ${ROOT_DIR}/3rdparty
 TOOLCHAIN_FILE := ${ROOT_DIR}/scripts/arm-toolchain.cmake
 FRAMEWORK_NAME := UVC_Camera
-THREAD_NUM := 14
+THREAD_NUM := 8
 
 .PHONY: all release debug clean build
 

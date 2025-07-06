@@ -2,7 +2,7 @@
 #define _WEB_COMMECT_H
 
 #include "OpencvPublic.h"
-#include "Socket.h"
+#include "socket.h"
 
 class WebConnect{
 public:

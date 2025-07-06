@@ -2,7 +2,7 @@
 #define _FACE_DETECTION_H
 
 #include "OpencvPublic.h"
-#include "SafeQueue.h"
+#include "safe_queue.h"
 #include <vector>
 
 class FaceDetection{

@@ -1,4 +1,4 @@
-#include "CameraUvc.h"
+#include "camera_uvc.h"
 #include <iostream>
 #include <iomanip>
 #include <cstdlib>

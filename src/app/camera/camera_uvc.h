@@ -3,7 +3,7 @@
 
 #include <OpencvPublic.h>
 #include <turbojpeg.h>
-#include "MppJpegDecoder.h"
+#include "mpp_jpeg_decoder.h"
 
 class CameraUvc{
 public:

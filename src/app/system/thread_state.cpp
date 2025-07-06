@@ -1,4 +1,4 @@
-#include "ThreadState.h"
+#include "thread_state.h"
 
 void ThreadState::wait_for_state_false(){
 

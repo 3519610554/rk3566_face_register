@@ -1,15 +1,14 @@
 #ifndef _SOCKET_H
 #define _SOCKET_H
 
-#include "OpencvPublic.h"
 #include <cstddef>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <nlohmann/json.hpp>
 #include <unordered_map>
 #include <vector>
-#include "SafeQueue.h"
-#include "ThreadState.h"
+#include "safe_queue.h"
+#include "thread_state.h"
 
 #define CLIENT_ALL  0
 

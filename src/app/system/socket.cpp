@@ -1,4 +1,4 @@
-#include "Socket.h"
+#include "socket.h"
 #include <algorithm>
 #include <exception>
 #include <string>
@@ -9,8 +9,8 @@
 #include <spdlog/spdlog.h>
 #include <netinet/tcp.h> 
 #include <yaml-cpp/yaml.h>
-#include "ThreadPool.h"
-#include "HashBase62.h"
+#include "thread_pool.h"
+#include "hash_base62.h"
 
 Socket::Socket(){
     

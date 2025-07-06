@@ -1,5 +1,5 @@
-#include "UserSQLite.h"
-#include "File.h"
+#include "user_sqlite.h"
+#include "file_cpp.h"
 #include <spdlog/spdlog.h>
 
 #define SQL_FILE_PATH           "../assets/database/"

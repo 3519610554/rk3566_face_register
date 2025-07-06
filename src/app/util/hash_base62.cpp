@@ -1,5 +1,5 @@
-#include "HashBase62.h"
-#include "LocalTime.h"
+#include "hash_base62.h"
+#include "local_time.h"
 
 const std::string BASE62_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 

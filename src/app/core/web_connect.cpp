@@ -1,13 +1,13 @@
-#include "WebConnect.h"
+#include "web_connect.h"
 #include <iostream>
 #include <unistd.h>
 #include <nlohmann/json.hpp>
 #include <cstdint>
 #include <spdlog/spdlog.h>
-#include "LocalTime.h"
-#include "Socket.h"
-#include "FaceDetection.h"
-#include "BackendSQLite.h"
+#include "local_time.h"
+#include "socket.h"
+#include "face_detection.h"
+#include "backend_sqlite.h"
 
 
 #define CHUNK_SIZE                  512

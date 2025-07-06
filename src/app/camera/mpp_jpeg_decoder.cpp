@@ -1,4 +1,4 @@
-#include "MppJpegDecoder.h"
+#include "mpp_jpeg_decoder.h"
 #include <OpencvPublic.h>
 #include <rk_mpi_cmd.h>
 #include <cstring>

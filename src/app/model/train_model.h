@@ -6,7 +6,7 @@
 #include <queue>
 #include <vector>
 #include "OpencvPublic.h"
-#include "SafeQueue.h"
+#include "safe_queue.h"
 
 #define MPDEL_TRAIN_METHODS     cv::face::LBPHFaceRecognizer
 #define CONFIDENCE_THRESHOLD    100

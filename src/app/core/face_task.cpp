@@ -1,8 +1,8 @@
-#include "FaceTask.h"
-#include "CameraUvc.h"
-#include "FaceDetection.h"
-#include "WebConnect.h"
-#include "ThreadPool.h"
+#include "face_task.h"
+#include "camera_uvc.h"
+#include "face_detection.h"
+#include "web_connect.h"
+#include "thread_pool.h"
 #include <spdlog/spdlog.h>
 
 FaceTask::FaceTask(){
