@@ -43,20 +43,20 @@ CameraUvc* CameraUvc::Instance(){
 }
 
 void CameraUvc::initialize(std::string yaml_path){
-    // 解析配置
+    //解析配置
     YAML::Node cfg = YAML::LoadFile(yaml_path)["camera"];
     std::string dev = cfg["id"].as<std::string>();
     m_width  = cfg["width"].as<int>();
     m_height = cfg["height"].as<int>();
 
-    // 打开设备
+    //打开设备
     m_fd = open(dev.c_str(), O_RDWR);
     if (m_fd < 0) {
         spdlog::error("Failed to open device: {}", dev);
         return;
     }
 
-    // 设置 MJPEG 格式
+    //设置 MJPEG 格式
     v4l2_format fmt = {};
     fmt.type                = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     fmt.fmt.pix.width       = m_width;
@@ -73,7 +73,7 @@ void CameraUvc::initialize(std::string yaml_path){
     m_height = fmt.fmt.pix.height;
     spdlog::info("Camera resolution: {}x{}", m_width, m_height);
 
-    // 请求缓冲区
+    //请求缓冲区
     v4l2_requestbuffers req = {};
     req.count  = m_buffer_count;
     req.type   = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -85,7 +85,7 @@ void CameraUvc::initialize(std::string yaml_path){
         return;
     }
 
-    // mmapBuffers
+    //mmapBuffers
     m_buffers.resize(req.count);
     for (int i = 0; i < (int)req.count; ++i) {
         v4l2_buffer buf = {};
@@ -111,7 +111,7 @@ void CameraUvc::initialize(std::string yaml_path){
         }
     }
 
-    // 入队所有缓冲区
+    //入队所有缓冲区
     for (int i = 0; i < (int)m_buffers.size(); ++i) {
         v4l2_buffer buf = {};
         buf.type   = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -120,7 +120,7 @@ void CameraUvc::initialize(std::string yaml_path){
         ioctl(m_fd, VIDIOC_QBUF, &buf);
     }
 
-    // 开启采集
+    //开启采集
     {
         enum v4l2_buf_type type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
         if (ioctl(m_fd, VIDIOC_STREAMON, &type) < 0) {
@@ -141,7 +141,7 @@ bool CameraUvc::frame_get(cv::Mat &frame){
         return false;
     }
 
-    // 1) DQBUF
+    //1) DQBUF
     v4l2_buffer buf = {};
     buf.type   = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     buf.memory = V4L2_MEMORY_MMAP;
@@ -152,7 +152,7 @@ bool CameraUvc::frame_get(cv::Mat &frame){
     auto data   = reinterpret_cast<unsigned char*>(m_buffers[buf.index].start);
     auto length = buf.bytesused;
 
-    // 2) 解码到 m_dstBuf
+    //2) 解码到 m_dstBuf
     if (tjDecompress2(
             m_tjh,
             data,
@@ -170,10 +170,10 @@ bool CameraUvc::frame_get(cv::Mat &frame){
         return false;
     }
 
-    // 3) 返回预分配好的 Mat
+    //3) 返回预分配好的 Mat
     frame = m_frameMat;
 
-    // 4) QBUF
+    //4) QBUF
     ioctl(m_fd, VIDIOC_QBUF, &buf);
     return true;
 }

@@ -30,7 +30,6 @@ RnkkInference* RnkkInference::Instance(){
 }
 
 void RnkkInference::initialize(std::string yaml_path){
-
     YAML::Node config = YAML::LoadFile(yaml_path)["rknn_model"];
     m_model_path = config["path"].as<std::string>();
     m_width = config["input_size"][0].as<int>();

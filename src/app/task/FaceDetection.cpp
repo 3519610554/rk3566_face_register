@@ -73,7 +73,6 @@ void FaceDetection::dispose_thread(){
 }
 
 void FaceDetection::enroll_face_task(cv::Mat &frame, cv::Mat &gray, std::vector<cv::Rect> faces){
-
     size_t faces_size = faces.size();
     if (faces_size==0 || faces_size > 1)
         return;
@@ -101,7 +100,6 @@ void FaceDetection::enroll_face_task(cv::Mat &frame, cv::Mat &gray, std::vector<
 }
 
 void FaceDetection::detection_face_task(cv::Mat &frame, cv::Mat &gray, std::vector<cv::Rect> faces){
-
     size_t faces_size = faces.size();
     if (faces_size == 0)
         return;
@@ -124,7 +122,8 @@ void FaceDetection::detection_face_task(cv::Mat &frame, cv::Mat &gray, std::vect
             cv::Scalar color(255, 0, 0);
             m_ft2->putText(frame, label_text, text_org, 30, color, -1, cv::LINE_AA, false);
         }else {
-            scalar = cv::Scalar(0, 255, 255);  // 黄色
+            //黄色
+            scalar = cv::Scalar(0, 255, 255);  
         }
         cv::rectangle(frame, face_rect, scalar, 2);
     }
