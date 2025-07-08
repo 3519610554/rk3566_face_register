@@ -97,7 +97,7 @@ class ClientConnect:
     #录入人脸
     def _submit_form(self):
         name = request.get_json().get('name') 
-        logging.info("_submit_form recv name: ", name)
+        logging.info(f"_submit_form recv name: {name}")
         self.send_type_in(name)
         return jsonify({"message": "录入成功", "status": "ok"}), 200
 
