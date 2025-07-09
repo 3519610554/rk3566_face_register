@@ -22,7 +22,6 @@ bool MppJpegDecoder::init(int width, int height) {
     return true;
 }
 
-
 bool MppJpegDecoder::decode(unsigned char* jpeg_data, size_t jpeg_size, unsigned char* out_bgr) {
     MppPacket packet = nullptr;
     MppFrame frame = nullptr;
