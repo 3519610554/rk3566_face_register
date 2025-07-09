@@ -3,7 +3,6 @@
 
 #include <OpencvPublic.h>
 #include <turbojpeg.h>
-#include "mpp_jpeg_decoder.h"
 
 class CameraUvc{
 public:
@@ -16,7 +15,6 @@ public:
     //获取帧照片
     bool frame_get(cv::Mat &frame);
 private:
-    MppJpegDecoder m_mppDecoder;
     tjhandle         m_tjh{nullptr};
     // V4L2设备文件描述符
     int m_fd = -1;                    

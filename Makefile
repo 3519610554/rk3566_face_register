@@ -28,7 +28,7 @@ build:
 		-DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
 		-DFRAMEWORK_NAME=${FRAMEWORK_NAME} .. \
 	&& \
-	make -j${THREAD_NUM} && make install && cd -
+	make VERBOSE=1 -j${THREAD_NUM} && make install && cd -
 
 	cp -r assets config ${INSTALL_DIR}
 	touch ${BUILD_DIR}/.build_ok
@@ -99,9 +99,14 @@ yaml-cpp:
 mpp:
 	@[ -e ${BUILD_DIR}/$@/.build_ok ] && echo "$@ compilation completed..." || mkdir -p ${BUILD_DIR}/$@
 
+	cp -r ${THIRD_PARTY_DIR}/utils/
 	cd $(BUILD_DIR)/$@ && \
 	cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
-		-DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE} $(THIRD_PARTY_DIR)/$@ && \
+		-DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE} \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DBUILD_SHARED_LIBS=ON \
+		-DBUILD_TEST=OFF \
+		$(THIRD_PARTY_DIR)/$@ && \
 	make -j$(nproc) && sudo make install && cd -
 
 jpeg_turbo:
@@ -123,3 +128,23 @@ librga:
 
 	cp -r ${THIRD_PARTY_DIR}/$@/include/* ${INSTALL_DIR}/include/$@
 	cp -r ${THIRD_PARTY_DIR}/$@/libs/Linux/gcc-aarch64/*.so ${INSTALL_DIR}/lib
+
+ffmpeg:
+	@[ -e ${BUILD_DIR}/$@/.build_ok ] && echo "$@ compilation completed..." || mkdir -p ${BUILD_DIR}/$@
+
+	cd $(BUILD_DIR)/$@ && \
+	$(THIRD_PARTY_DIR)/$@/configure \
+		--prefix=${INSTALL_DIR} \
+		--cross-prefix=aarch64-linux-gnu- \
+		--arch=aarch64 \
+		--target-os=linux \
+		--sysroot=/home/ros2/chroot/rk3566 \
+		--enable-gpl \
+		--enable-version3 \
+		--enable-libdrm \
+		--enable-rkmpp \
+		--enable-rkrga \
+		--extra-cflags="-I${INSTALL_DIR}/include" \
+		--extra-ldflags="-L${INSTALL_DIR}/lib" \
+		&& \
+	make -j${THREAD_NUM} && sudo make install && cd -

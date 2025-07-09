@@ -36,7 +36,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 #stb_image
 set(STD_IMAGE_API_PATH ${DEP_SOURCE_PATH}/stb_image)
-include_directories( ${STD_IMAGE_API_PATH}/include)
+include_directories(${STD_IMAGE_API_PATH}/include)
 
 #target
 include_directories(${CMAKE_INSTALL_PREFIX}/include)
@@ -77,7 +77,7 @@ include_directories(${CMAKE_INSTALL_PREFIX}/include/spdlog)
 #yaml-cpp
 include_directories(${CMAKE_INSTALL_PREFIX}/include/yaml-cpp)
 
-#rockchip
+#mpp
 include_directories(${CMAKE_INSTALL_PREFIX}/include/rockchip)
 
 #jpeg_turbo
