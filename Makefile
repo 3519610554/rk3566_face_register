@@ -9,7 +9,7 @@ BUILD_DIR	:= ${ROOT_DIR}/build
 THIRD_PARTY_DIR := ${ROOT_DIR}/3rdparty
 TOOLCHAIN_FILE := ${ROOT_DIR}/scripts/arm-toolchain.cmake
 FRAMEWORK_NAME := UVC_Camera
-THREAD_NUM := 8
+THREAD_NUM := 14
 
 .PHONY: all release debug clean build
 
@@ -73,10 +73,10 @@ sqlite:
 	make -j${THREAD_NUM} && sudo make install && cd -
 
 json:
-	cp -r ${THIRD_PARTY_DIR}/$@/single_include/$@ ${INSTALL_DIR}/include/$@
+	cp -r ${THIRD_PARTY_DIR}/$@/single_include/ ${INSTALL_DIR}/include/$@
 	
 spdlog:
-	cp -r ${THIRD_PARTY_DIR}/$@/include/$@ ${INSTALL_DIR}/include/$@
+	cp -r ${THIRD_PARTY_DIR}/$@/include/ ${INSTALL_DIR}/include/$@
 
 rknn:
 	@[ ! -d ${INSTALL_DIR}/include/$@ ] echo "$@ include exist" || mkdir -p ${INSTALL_DIR}/include/$@

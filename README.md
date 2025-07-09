@@ -41,6 +41,8 @@ git submodule update --init --recursive
 
 # 需要安装的依赖
 ```bash
+sudo apt install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+sudo apt install patchelf
 sudo apt-get install build-essential cmake libdrm-dev libpthread-stubs0-dev
 ```
 

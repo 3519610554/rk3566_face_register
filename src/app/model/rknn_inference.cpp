@@ -1,5 +1,4 @@
 #include "rknn_inference.h"
-#include "spdlog.h"
 #include <yaml-cpp/yaml.h>
 #include <spdlog/spdlog.h>
 #include <string>
