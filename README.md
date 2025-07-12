@@ -41,31 +41,34 @@ git submodule update --init --recursive
 
 # 交叉编译主机需要安装的依赖
 ```bash
-sudo apt install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
-sudo apt install patchelf libomp-14-dev
+sudo apt install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu -y
+sudo apt install patchelf libomp-14-dev -y
 ```
 
 # 交叉编译环境需要安装的依赖
-```bash
-sudo apt-get install build-essential cmake libdrm-dev libpthread-stubs0-dev libgomp1 libstdc++-12-dev
 
-# 基础构建工具
-sudo apt install build-essential cmake pkg-config
+```bash
+sudo apt-get install libgomp1 libstdc++-12-dev build-essential cmake pkg-config -y
+```
+
+# rk3566需要安装的依赖
+```bash
+sudo apt-get install libdrm-dev libpthread-stubs0-dev -y
 
 # 基础图像处理库（JPEG、PNG、TIFF等）
-sudo apt install libjpeg-dev libpng-dev libtiff-dev
+sudo apt install libjpeg-dev libpng-dev libtiff-dev -y
 
 # GTK 相关（你启用了 WITH_GTK=ON，WITH_GTK_2_X=ON，用于图形界面）
-sudo apt install libgtk2.0-dev
+sudo apt install libgtk2.0-dev -y
 
 # 多线程支持（TBB 和 OpenMP）
-sudo apt install libtbb-dev
+sudo apt install libtbb-dev -y
 
 # 字体渲染 FreeType（WITH_FREETYPE=ON）
-sudo apt install libfreetype6-dev
+sudo apt install libfreetype6-dev -y
 
 # OpenCL 支持
-sudo apt install ocl-icd-opencl-dev
+sudo apt install ocl-icd-opencl-dev -y
 ```
 
 # 交叉编译完成后运行在目标板
