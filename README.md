@@ -36,7 +36,7 @@
 
 # 初始化子仓库
 ```bash
-git submodule update --init --recursive
+git submodule update --init --recursive --depth 1
 ```
 
 # 交叉编译主机需要安装的依赖

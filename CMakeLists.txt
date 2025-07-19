@@ -84,7 +84,7 @@ include_directories(${CMAKE_INSTALL_PREFIX}/include/rockchip)
 include_directories( ${CMAKE_INSTALL_PREFIX}/include/jpeg_turbo)
 
 #librga
-include_directories( ${CMAKE_INSTALL_PREFIX}/include/librga)
+include_directories( ${CMAKE_INSTALL_PREFIX}/include/rga)
 
 message(STATUS ${CMAKE_CURRENT_SOURCE_DIR})
 

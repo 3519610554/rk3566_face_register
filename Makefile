@@ -10,6 +10,8 @@ THIRD_PARTY_DIR := ${ROOT_DIR}/3rdparty
 TOOLCHAIN_FILE := ${ROOT_DIR}/scripts/arm-toolchain.cmake
 FRAMEWORK_NAME := UVC_Camera
 THREAD_NUM := 14
+CURRENT_USER := $(USER)
+SYSROOT_PATH := /home/${CURRENT_USER}/chroot/rk3566
 
 .PHONY: all release debug clean build
 
@@ -99,7 +101,6 @@ yaml-cpp:
 mpp:
 	@[ -e ${BUILD_DIR}/$@/.build_ok ] && echo "$@ compilation completed..." || mkdir -p ${BUILD_DIR}/$@
 
-	cp -r ${THIRD_PARTY_DIR}/utils/
 	cd $(BUILD_DIR)/$@ && \
 	cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
 		-DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE} \
@@ -124,21 +125,38 @@ jpeg_turbo:
 	make -j$(nproc) && sudo make install && cd -
 
 librga:
-	@[ -d ${INSTALL_DIR}/include/$@ ] && echo "$@ compilation completed..." || mkdir -p ${INSTALL_DIR}/include/$@
+	@mkdir -p ${INSTALL_DIR}/include/rga
+	@mkdir -p ${INSTALL_DIR}/lib/pkgconfig
 
-	cp -r ${THIRD_PARTY_DIR}/$@/include/* ${INSTALL_DIR}/include/$@
+	cp -r ${THIRD_PARTY_DIR}/$@/include/* ${INSTALL_DIR}/include/rga
 	cp -r ${THIRD_PARTY_DIR}/$@/libs/Linux/gcc-aarch64/*.so ${INSTALL_DIR}/lib
+
+	@echo "prefix=${INSTALL_DIR}" > ${INSTALL_DIR}/lib/pkgconfig/librga.pc
+	@echo "exec_prefix=\$${prefix}" >> ${INSTALL_DIR}/lib/pkgconfig/librga.pc
+	@echo "libdir=\$${prefix}/lib" >> ${INSTALL_DIR}/lib/pkgconfig/librga.pc
+	@echo "includedir=\$${prefix}/include/rga" >> ${INSTALL_DIR}/lib/pkgconfig/librga.pc
+	@echo "" >> ${INSTALL_DIR}/lib/pkgconfig/librga.pc
+	@echo "Name: rga" >> ${INSTALL_DIR}/lib/pkgconfig/librga.pc
+	@echo "Description: Rockchip RGA Library" >> ${INSTALL_DIR}/lib/pkgconfig/librga.pc
+	@echo "Version: 1.0" >> ${INSTALL_DIR}/lib/pkgconfig/librga.pc
+	@echo "Libs: -L\$${libdir} -lrga" >> ${INSTALL_DIR}/lib/pkgconfig/librga.pc
+	@echo "Cflags: -I\$${includedir}" >> ${INSTALL_DIR}/lib/pkgconfig/librga.pc
+
+	@echo "$@ compilation completed..."
 
 ffmpeg:
 	@[ -e ${BUILD_DIR}/$@/.build_ok ] && echo "$@ compilation completed..." || mkdir -p ${BUILD_DIR}/$@
 
-	cd $(BUILD_DIR)/$@ && \
+	cd ${BUILD_DIR}/$@ && \
+	export PKG_CONFIG_LIBDIR=${SYSROOT_PATH}/usr/lib/aarch64-linux-gnu/pkgconfig:${INSTALL_DIR}/lib/pkgconfig && \
+	export PKG_CONFIG_PATH=${SYSROOT_PATH}/usr/lib/aarch64-linux-gnu/pkgconfig:${INSTALL_DIR}/lib/pkgconfig && \
 	$(THIRD_PARTY_DIR)/$@/configure \
+		--pkg-config pkg-config \
 		--prefix=${INSTALL_DIR} \
 		--cross-prefix=aarch64-linux-gnu- \
 		--arch=aarch64 \
 		--target-os=linux \
-		--sysroot=/home/ros2/chroot/rk3566 \
+		--sysroot=${SYSROOT_PATH} \
 		--enable-gpl \
 		--enable-version3 \
 		--enable-libdrm \
@@ -146,5 +164,5 @@ ffmpeg:
 		--enable-rkrga \
 		--extra-cflags="-I${INSTALL_DIR}/include" \
 		--extra-ldflags="-L${INSTALL_DIR}/lib" \
-		&& \
+	&& \
 	make -j${THREAD_NUM} && sudo make install && cd -
