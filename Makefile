@@ -159,9 +159,17 @@ ffmpeg:
 		--sysroot=${SYSROOT_PATH} \
 		--enable-gpl \
 		--enable-version3 \
+		--enable-nonfree \
+		--enable-libv4l2 \
+		--enable-indev=v4l2 \
+		--enable-postproc \
 		--enable-libdrm \
 		--enable-rkmpp \
 		--enable-rkrga \
+		--enable-shared \
+		--disable-static \
+		--disable-debug \
+		--disable-doc \
 		--extra-cflags="-I${INSTALL_DIR}/include" \
 		--extra-ldflags="-L${INSTALL_DIR}/lib" \
 	&& \

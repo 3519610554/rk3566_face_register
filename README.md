@@ -51,9 +51,9 @@ sudo apt install patchelf libomp-14-dev -y
 sudo apt-get install libgomp1 libstdc++-12-dev build-essential cmake pkg-config -y
 ```
 
-# rk3566需要安装的依赖
+# rk3566和交叉编译环境需要安装的依赖
 ```bash
-sudo apt-get install libdrm-dev libpthread-stubs0-dev -y
+sudo apt-get install libdrm-dev libpthread-stubs0-dev libv4l-dev -y
 
 # 基础图像处理库（JPEG、PNG、TIFF等）
 sudo apt install libjpeg-dev libpng-dev libtiff-dev -y

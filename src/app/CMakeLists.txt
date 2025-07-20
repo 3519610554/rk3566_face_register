@@ -7,6 +7,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/model/rknn
     ${CMAKE_CURRENT_SOURCE_DIR}/system
     ${CMAKE_CURRENT_SOURCE_DIR}/util
+    ${CMAKE_CURRENT_SOURCE_DIR}/rockchip
 )
 
 file(GLOB_RECURSE SRC_LIST 
@@ -22,9 +23,9 @@ add_executable(${FRAMEWORK_NAME}
 )
 
 set(EXTRA_LIBS
+    opencv_imgcodecs
     opencv_highgui
     opencv_imgproc
-    opencv_imgcodecs
     opencv_core
     opencv_videoio
     opencv_objdetect
@@ -33,7 +34,7 @@ set(EXTRA_LIBS
     opencv_calib3d  
     opencv_face
     opencv_freetype
-    opencv_dnn
+    opencv_dnn  
     sqlite3
     rknnrt
     OpenCL
@@ -41,9 +42,20 @@ set(EXTRA_LIBS
     dl
     stdc++
     yaml-cpp
-    rockchip_mpp
-    rga
     turbojpeg
+    avfilter 
+    avdevice 
+    avformat
+    avcodec
+    avutil
+    swresample
+    swscale
+    rockchip_mpp
+    drm
+    rga
+    z
+    lzma
+    postproc
 )
 
 target_link_libraries(${FRAMEWORK_NAME}
