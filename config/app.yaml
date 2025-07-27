@@ -2,6 +2,7 @@ camera:
   id: "/dev/video0"
   width: 640
   height: 480
+  fps: 30
 
 rknn_model:
   path: "../assets/model/RetinaFace_mobile320.rknn"
