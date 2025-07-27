@@ -4,6 +4,8 @@
 #include <vector>
 #include <cstring>
 
+#include <OpencvPublic.h>
+
 #include <rockchip/mpp_buffer.h>
 #include <rockchip/mpp_frame.h>
 #include <rockchip/mpp_packet.h>
@@ -13,14 +15,18 @@
 
 #include <spdlog/spdlog.h>
 
+#ifndef MPP_ALIGN
+#define MPP_ALIGN(x, a) (((x) + (a) - 1) & ~((a) - 1))
+#endif
+
 class MppEncoder {
 public:
     MppEncoder();
     ~MppEncoder();
     void initialize(int width, int height);
-
+    void bgr_to_nv12(const cv::Mat& bgr, uint8_t* nv12_buffer);
     // 编码一帧 YUV 数据（输入为 YUV420）
-    bool encode(uint8_t* yuv_data, size_t yuv_size, std::vector<uint8_t>& out_h264);
+    bool encode(uint8_t* yuv_data, std::vector<uint8_t>& out_h264);
 private:
     struct EncoderInfo{
         int width;

@@ -4,6 +4,8 @@
 #include <OpencvPublic.h>
 
 #include "mpp_encoder.h"
+#include "safe_queue.h"
+#include "thread_pool.h"
 
 class CameraUvc{
 public:
@@ -15,6 +17,11 @@ public:
     void initialize(std::string yaml_path);
     //获取帧照片
     bool frame_get(cv::Mat &frame);
+    //显示画面
+    void frame_show(cv::Mat frame);
+protected:
+    void show_thread();
+    void mediamtx_thread();
 private:
     struct CameraInfo{
         std::string id;
@@ -28,6 +35,7 @@ private:
     cv::VideoCapture m_cap;
     MppEncoder m_encoder;
     FILE* m_ffmpeg;
+    SafeQueue<cv::Mat> m_frame;
 };
 
 #endif

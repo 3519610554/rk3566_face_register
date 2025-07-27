@@ -174,3 +174,7 @@ ffmpeg:
 		--extra-ldflags="-L${INSTALL_DIR}/lib" \
 	&& \
 	make -j${THREAD_NUM} && sudo make install && cd -
+
+mediamtx:
+	cp ${THIRD_PARTY_DIR}/$@/mediamtx ${INSTALL_DIR}/bin/
+	cp ${THIRD_PARTY_DIR}/$@/mediamtx.yml ${INSTALL_DIR}/bin/

@@ -8,6 +8,7 @@
 #include "base64.h"
 #include "local_time.h"
 #include "rknn_inference.h"
+#include "camera_uvc.h"
 #include <cstddef>
 #include <spdlog/spdlog.h>
 #include <yaml-cpp/yaml.h>
@@ -67,8 +68,9 @@ void FaceDetection::dispose_thread(){
         cv::cvtColor(frame, gray, cv::COLOR_RGBA2RGB);
         detection_faces(frame, m_faces);
         m_face_task(frame, frame, m_faces);
-        cv::imshow("USB Camera", frame);
-        cv::waitKey(1);
+        // cv::imshow("USB Camera", frame);
+        // cv::waitKey(1);
+        CameraUvc::Instance()->frame_show(frame);
     }
 }
 

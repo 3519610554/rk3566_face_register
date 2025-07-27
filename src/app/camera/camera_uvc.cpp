@@ -2,6 +2,7 @@
 
 #include <spdlog/spdlog.h>
 #include <yaml-cpp/yaml.h>
+#include <cstdlib>
 
 CameraUvc::CameraUvc(){
 
@@ -40,9 +41,12 @@ void CameraUvc::initialize(std::string yaml_path){
 
     m_cap = cap;
     m_encoder.initialize(m_camera.width, m_camera.height);
+    std::string ffmpeg_cmd =
+        "/root/target/bin/ffmpeg -f h264 -i - "
+        "-f rtsp -rtsp_transport tcp rtsp://0.0.0.0:8554/live";
+
     m_ffmpeg = popen(
-        "ffmpeg -re -f h264 -i - "
-        "-c copy -f rtsp rtsp://localhost:8554/live.stream",
+        ffmpeg_cmd.c_str(), 
         "w"
     );
 
@@ -50,6 +54,8 @@ void CameraUvc::initialize(std::string yaml_path){
         spdlog::error("无法启动 FFmpeg 进程");
         return;
     }
+    ThreadPool::Instance()->enqueue(&CameraUvc::mediamtx_thread, this);
+    ThreadPool::Instance()->enqueue(&CameraUvc::show_thread, this);
 }
 
 bool CameraUvc::frame_get(cv::Mat &frame) {
@@ -59,16 +65,55 @@ bool CameraUvc::frame_get(cv::Mat &frame) {
         spdlog::info("无法读取帧");
         return false;
     }
-
     cv::flip(frame, frame, 1);
-    cv::Mat yuv;
-    cv::cvtColor(frame, yuv, cv::COLOR_BGR2YUV_I420);
-    std::vector<uint8_t> h264_data;
-    int yuv_size = m_camera.width * m_camera.height * 3 / 2;
-    bool success = m_encoder.encode(yuv.data, yuv_size, h264_data);
-    if (success && !h264_data.empty()) {
-        fwrite(h264_data.data(), 1, h264_data.size(), m_ffmpeg);
-        fflush(m_ffmpeg);
-    }
+    
     return true;
+}
+
+void CameraUvc::frame_show(cv::Mat frame){
+    m_frame.push(frame); 
+}
+
+
+void CameraUvc::show_thread(){
+
+    spdlog::info("显示视频线程启动...");
+
+    while(true){
+        cv::Mat frame = m_frame.pop();
+        int width = frame.cols;
+        int height = frame.rows;
+        int hor_stride = MPP_ALIGN(width, 16);
+        int ver_stride = MPP_ALIGN(height, 16);
+        size_t stride = MPP_ALIGN(width, 16);
+        size_t frame_size = stride * height * 3 / 2;
+
+        std::vector<uint8_t> nv12_buffer(frame_size);
+
+        m_encoder.bgr_to_nv12(frame, nv12_buffer.data());
+
+        std::vector<uint8_t> encoded;
+        if (!m_encoder.encode(nv12_buffer.data(), encoded)) {
+            spdlog::error("编码失败");
+            return;
+        }
+        spdlog::info("Encoded frame size: {}", encoded.size());
+
+        size_t write_size = fwrite(encoded.data(), 1, encoded.size(), m_ffmpeg);
+        fflush(m_ffmpeg);
+
+        if (write_size != encoded.size()) {
+            spdlog::error("写入 FFmpeg 进程失败");
+            return;
+        }
+        cv::imshow("USB Camera", frame);
+        cv::waitKey(1);
+    }
+}
+
+void CameraUvc::mediamtx_thread(){
+    int ret = system("./mediamtx");
+    if (ret != 0) {
+        spdlog::error("mediamtx 启动失败，返回码 {}", ret);
+    }
 }

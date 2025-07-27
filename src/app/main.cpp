@@ -15,7 +15,7 @@ int main(int argc, char* argv[]) {
         spdlog::info("config yaml path: {}", yaml_path);
     }
 
-    ThreadPool::Instance()->initialize(8);
+    ThreadPool::Instance()->initialize(10);
     CameraUvc::Instance()->initialize(yaml_path);
     WebConnect::Instance()->initialize(yaml_path);
     TrainModel::Instance()->initialize(yaml_path);
