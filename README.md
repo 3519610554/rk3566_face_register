@@ -86,5 +86,10 @@ export LD_LIBRARY_PATH=/root/target/lib:$LD_LIBRARY_PATH
 3. 开始运行
 ```bash
 cd /root/target/bin
+
+4. 客户端拉流
+```bash
+ffplay -fflags nobuffer -flags low_delay -framedrop -strict experimental rtsp://192.168.10.8:8554/live
+```
 ./UVC_Camera
 ```
