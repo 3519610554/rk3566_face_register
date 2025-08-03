@@ -9,7 +9,6 @@ CameraUvc::CameraUvc(){
 }
 
 CameraUvc::~CameraUvc(){
-    pclose(m_ffmpeg);
     m_cap.release();
     cv::destroyAllWindows();
 }
@@ -40,21 +39,7 @@ void CameraUvc::initialize(std::string yaml_path){
     cap.set(cv::CAP_PROP_FPS, m_camera.fps);
 
     m_cap = cap;
-    m_encoder.initialize(m_camera.width, m_camera.height);
-    std::string ffmpeg_cmd =
-        "/root/target/bin/ffmpeg -f h264 -i - "
-        "-f rtsp -rtsp_transport tcp rtsp://0.0.0.0:8554/live";
-
-    m_ffmpeg = popen(
-        ffmpeg_cmd.c_str(), 
-        "w"
-    );
-
-    if (!m_ffmpeg) {
-        spdlog::error("无法启动 FFmpeg 进程");
-        return;
-    }
-    ThreadPool::Instance()->enqueue(&CameraUvc::mediamtx_thread, this);
+    m_ffmpeg.initialize(m_camera.width, m_camera.height, m_camera.fps);
     ThreadPool::Instance()->enqueue(&CameraUvc::show_thread, this);
 }
 
@@ -81,39 +66,8 @@ void CameraUvc::show_thread(){
 
     while(true){
         cv::Mat frame = m_frame.pop();
-        int width = frame.cols;
-        int height = frame.rows;
-        int hor_stride = MPP_ALIGN(width, 16);
-        int ver_stride = MPP_ALIGN(height, 16);
-        size_t stride = MPP_ALIGN(width, 16);
-        size_t frame_size = stride * height * 3 / 2;
-
-        std::vector<uint8_t> nv12_buffer(frame_size);
-
-        m_encoder.bgr_to_nv12(frame, nv12_buffer.data());
-
-        std::vector<uint8_t> encoded;
-        if (!m_encoder.encode(nv12_buffer.data(), encoded)) {
-            spdlog::error("编码失败");
-            return;
-        }
-        spdlog::info("Encoded frame size: {}", encoded.size());
-
-        size_t write_size = fwrite(encoded.data(), 1, encoded.size(), m_ffmpeg);
-        fflush(m_ffmpeg);
-
-        if (write_size != encoded.size()) {
-            spdlog::error("写入 FFmpeg 进程失败");
-            return;
-        }
-        cv::imshow("USB Camera", frame);
-        cv::waitKey(1);
-    }
-}
-
-void CameraUvc::mediamtx_thread(){
-    int ret = system("./mediamtx");
-    if (ret != 0) {
-        spdlog::error("mediamtx 启动失败，返回码 {}", ret);
+        m_ffmpeg.encoder_push_stream(frame);
+        // cv::imshow("USB Camera", frame);
+        // cv::waitKey(1);
     }
 }

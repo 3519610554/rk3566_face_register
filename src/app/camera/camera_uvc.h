@@ -3,7 +3,7 @@
 
 #include <OpencvPublic.h>
 
-#include "mpp_encoder.h"
+#include "ffmpeg_mpp_encoder.h"
 #include "safe_queue.h"
 #include "thread_pool.h"
 
@@ -21,7 +21,6 @@ public:
     void frame_show(cv::Mat frame);
 protected:
     void show_thread();
-    void mediamtx_thread();
 private:
     struct CameraInfo{
         std::string id;
@@ -29,12 +28,10 @@ private:
         int height;
         int fps;
     };
-
 private:
     CameraInfo m_camera;
     cv::VideoCapture m_cap;
-    MppEncoder m_encoder;
-    FILE* m_ffmpeg;
+    FFmpegMppEncoder m_ffmpeg;
     SafeQueue<cv::Mat> m_frame;
 };
 
