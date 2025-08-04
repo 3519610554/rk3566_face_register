@@ -42,6 +42,7 @@ void WebConnect::initialize(std::string yaml_path){
 
     Socket::Instance()->initialize(yaml_path);
     
+    
 }
 
 void WebConnect::send_image(int sockfd, int id, std::string time, std::string imageBase64){

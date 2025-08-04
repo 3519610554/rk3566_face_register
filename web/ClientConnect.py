@@ -1,9 +1,14 @@
 import json
 import time
 import queue
+import base64
 import logging
-from flask import Flask, request, render_template, jsonify
+import cv2
+import threading
+from flask import Flask , Response, request, render_template, jsonify
 from flask_socketio import SocketIO, emit
+
+RTSP_URL = 'rtsp://127.0.0.1:8554/live'
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -22,8 +27,8 @@ class ClientConnect:
         self._register_recv()
         self._register_routes()
         self._register_socketio()
-
         self.m_socket.start()
+        self.cap = cv2.VideoCapture(RTSP_URL)
 
     #录入人脸命令
     def send_type_in(self, name):
@@ -62,6 +67,7 @@ class ClientConnect:
         for row in data:
             self.m_image_deque.put({'id': row[0], 'time': row[1], 'image': row[2]})
         self.m_socketio.start_background_task(self._stream_images) 
+        self.m_socketio.start_background_task(self._generate_and_emit_frames) 
 
     def _handle_connect(self):
         logging.info('Web connected')
@@ -96,7 +102,8 @@ class ClientConnect:
 
     #录入人脸
     def _submit_form(self):
-        name = request.get_json().get('name') 
+        name = request.get_json().get('name')
+        logging.info(f"test: {request.get_json()}")
         logging.info(f"_submit_form recv name: {name}")
         self.send_type_in(name)
         return jsonify({"message": "录入成功", "status": "ok"}), 200
@@ -116,4 +123,17 @@ class ClientConnect:
             if not self.m_image_deque.empty():
                 img_bytes = self.m_image_deque.get()
                 self.m_socketio.emit('image', {'data': img_bytes})
+            self.m_socketio.sleep(0.01)
+
+    def _generate_and_emit_frames(self):
+        while True:
+            success, frame = self.cap.read()
+            if not success:
+                continue
+            # 编码成 JPEG
+            _, buffer = cv2.imencode('.jpg', frame)
+            # base64 编码
+            frame_b64 = base64.b64encode(buffer).decode('utf-8')
+            # 发送给前端
+            self.m_socketio.emit('rtsp_stream', {'data': frame_b64})
             self.m_socketio.sleep(0.01)

@@ -4,7 +4,7 @@ let container;
 //页面初始化
 function initializeSocket() {
     if (!socket) {
-        socket = io.connect('http://' + document.domain + ':' + location.port);
+        socket = io.connect(window.location.origin);
         socket.on('connect', function() {
             console.log('Socket connected');
         });
@@ -17,6 +17,22 @@ function showPage(pageId) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     // 显示指定页面
     document.getElementById(pageId).classList.add('active');
+}
+
+function rtsp_show(){
+    if (!socket){
+        console.error("Socket not initialized");
+        return;
+    }
+    socket.on('rtsp_stream', function(data){
+        if (!data || !data.data) {
+            console.error("接收到的数据无效：", data);
+            return;
+        }
+        const imgData = data.data;
+        const img = document.getElementById('video_stream');
+        img.src = 'data:image/jpeg;base64,' + imgData;
+    });
 }
 
 //显示图片
