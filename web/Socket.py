@@ -17,7 +17,7 @@ logging.basicConfig(
 CHUNK_SIZE = 512
 
 class Socket:
-    def __init__(self, host='192.168.10.8', port=8000):
+    def __init__(self, host='localhost', port=8000):
         self.__host = host
         self.__port = port 
         self.__m_send_queue = queue.Queue()

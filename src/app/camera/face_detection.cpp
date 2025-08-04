@@ -52,7 +52,7 @@ size_t FaceDetection::detection_faces(cv::Mat image, std::vector<cv::Rect> &obje
     objects.clear();
     RnkkInference::Instance()->detection_face(image, objects);
     if (objects.size() > 0){
-        spdlog::info("face num: {}", objects.size());
+        // spdlog::info("face num: {}", objects.size());
     }
 
     return objects.size();
@@ -65,11 +65,10 @@ void FaceDetection::dispose_thread(){
     while(true){
         cv::Mat frame = m_frame.pop();
         cv::Mat gray;
-        cv::cvtColor(frame, gray, cv::COLOR_RGBA2RGB);
+        cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
+        // cv::cvtColor(frame, gray, cv::COLOR_RGBA2RGB);
         detection_faces(frame, m_faces);
-        m_face_task(frame, frame, m_faces);
-        // cv::imshow("USB Camera", frame);
-        // cv::waitKey(1);
+        m_face_task(frame, gray, m_faces);
         CameraUvc::Instance()->frame_show(frame);
     }
 }
@@ -94,7 +93,7 @@ void FaceDetection::enroll_face_task(cv::Mat &frame, cv::Mat &gray, std::vector<
     if (count < 50) 
         return;
     m_face_task = TASK_SWITCH(detection_face_task);
-    spdlog::info("The {} facial image capture has been completed.", m_user_num);
+    spdlog::info("第 {} 张面部图像采集已完成", m_user_num);
     TrainModel::Instance()->train_data_add(m_enroll_face_images, m_enroll_face_labels);
     UserSQLite::Instance()->insert_data(m_user_num, m_user_name);
     m_enroll_face_images.clear();

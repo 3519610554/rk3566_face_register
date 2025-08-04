@@ -344,7 +344,7 @@ int inference_retinaface_model(rknn_app_context_t *app_ctx, image_buffer_t *src_
     }
 
     // Run
-    spdlog::info("rknn_run");
+    // spdlog::info("rknn_run");
     ret = rknn_run(app_ctx->rknn_ctx, nullptr);
     if (ret < 0) {
         spdlog::error("rknn_run fail! ret={}", ret);
