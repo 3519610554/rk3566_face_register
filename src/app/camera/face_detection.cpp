@@ -18,7 +18,7 @@
 FaceDetection::FaceDetection(){
 
     m_frame_interval_cnt = 0;
-    m_face_task = TASK_SWITCH(detection_face_task);
+    m_task_state = 0;
     m_user_num = UserSQLite::Instance()->get_row_count();
 }
 
@@ -44,10 +44,10 @@ void FaceDetection::initialize(std::string yaml_path){
     RnkkInference::Instance()->initialize(yaml_path);
 }
 
-size_t FaceDetection::detection_faces(cv::Mat image, std::vector<cv::Rect> &objects){
+int FaceDetection::detection_faces(cv::Mat image, std::vector<cv::Rect> &objects){
 
     if (++m_frame_interval_cnt < 5)
-        return objects.size();
+        return 1;
     m_frame_interval_cnt = 0;
     objects.clear();
     RnkkInference::Instance()->detection_face(image, objects);
@@ -55,7 +55,7 @@ size_t FaceDetection::detection_faces(cv::Mat image, std::vector<cv::Rect> &obje
         // spdlog::info("face num: {}", objects.size());
     }
 
-    return objects.size();
+    return 0;
 }
 
 void FaceDetection::dispose_thread(){
@@ -67,8 +67,12 @@ void FaceDetection::dispose_thread(){
         cv::Mat gray;
         cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
         // cv::cvtColor(frame, gray, cv::COLOR_RGBA2RGB);
-        detection_faces(frame, m_faces);
-        m_face_task(frame, gray, m_faces);
+        int frame_skipping = detection_faces(frame, m_faces);
+        if (m_task_state == 0){
+            detection_face_task(frame, gray, m_faces);
+        }else if (m_task_state == 1){
+            enroll_face_task(frame, gray, m_faces);
+        }
         CameraUvc::Instance()->frame_show(frame);
     }
 }
@@ -92,7 +96,7 @@ void FaceDetection::enroll_face_task(cv::Mat &frame, cv::Mat &gray, std::vector<
 
     if (count < 50) 
         return;
-    m_face_task = TASK_SWITCH(detection_face_task);
+    m_task_state = 0;
     spdlog::info("第 {} 张面部图像采集已完成", m_user_num);
     TrainModel::Instance()->train_data_add(m_enroll_face_images, m_enroll_face_labels);
     UserSQLite::Instance()->insert_data(m_user_num, m_user_name);
@@ -148,7 +152,7 @@ void FaceDetection::frame_data_add(cv::Mat frame){
 
 void FaceDetection::enroll_face(std::string name){
 
-    m_face_task = TASK_SWITCH(enroll_face_task);
+    m_task_state = 1;
     m_user_name = name;
     m_user_num ++;
 }
