@@ -5,7 +5,12 @@
 #include <cstdlib>
 
 CameraUvc::CameraUvc(){
-
+    m_mediamtx_pid = fork();
+    if (m_mediamtx_pid == 0) {
+        execl("./mediamtx", "mediamtx", (char*)nullptr);
+        perror("execl failed");
+        exit(1);
+    }
 }
 
 CameraUvc::~CameraUvc(){
@@ -58,7 +63,6 @@ bool CameraUvc::frame_get(cv::Mat &frame) {
 void CameraUvc::frame_show(cv::Mat frame){
     m_frame.push(frame); 
 }
-
 
 void CameraUvc::show_thread(){
 

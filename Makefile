@@ -11,7 +11,7 @@ TOOLCHAIN_FILE := ${ROOT_DIR}/scripts/arm-toolchain.cmake
 FRAMEWORK_NAME := UVC_Camera
 THREAD_NUM := 14
 CURRENT_USER := $(USER)
-SYSROOT_PATH := /home/${CURRENT_USER}/chroot/rk3566
+SYSROOT_PATH := /home/${CURRENT_USER}/chroot/ubuntu22-arm
 
 .PHONY: all release debug clean build
 

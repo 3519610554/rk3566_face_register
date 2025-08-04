@@ -48,7 +48,7 @@ int FFmpegMppEncoder::initialize(int width, int height, int fps){
 
     av_dict_free(&m_ffmpeg.param);
 
-    avformat_alloc_output_context2(&m_ffmpeg.fmt_ctx, nullptr, "rtsp", "rtsp://127.0.0.1:8554/live");
+    avformat_alloc_output_context2(&m_ffmpeg.fmt_ctx, nullptr, "rtsp", "rtsp://0.0.0.0:8554/live");
 
     if (!m_ffmpeg.fmt_ctx) {
         std::cerr << "RTSP 输出上下文创建失败" << std::endl;

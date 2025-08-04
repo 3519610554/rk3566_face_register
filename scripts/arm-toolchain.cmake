@@ -1,6 +1,7 @@
 #arm-toolchain.cmake
 
 set(USERNAME $ENV{USER})
+set(CHRROT_NAME "ubuntu22-arm")
 message(STATUS "当前用户名: ${USERNAME}")
 
 #1. 指定系统名称
@@ -14,7 +15,7 @@ set(CMAKE_C_COMPILER   aarch64-linux-gnu-gcc)
 set(CMAKE_CXX_COMPILER aarch64-linux-gnu-g++)
 
 #4. 指定目标根文件系统
-set(CMAKE_SYSROOT /home/${USERNAME}/chroot/rk3566)
+set(CMAKE_SYSROOT /home/${USERNAME}/chroot/${CHRROT_NAME})
 
 #5. 告诉 CMake 在查找时以 sysroot 为优先，并设置查找策略
 #   这样 CMake 会优先在 sysroot 下查找头文件和库，不会误用宿主机 x86_64 上的

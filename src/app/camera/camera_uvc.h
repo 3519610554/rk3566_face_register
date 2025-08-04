@@ -7,6 +7,9 @@
 #include "safe_queue.h"
 #include "thread_pool.h"
 
+#include <unistd.h>
+#include <sys/wait.h>
+
 class CameraUvc{
 public:
     CameraUvc();
@@ -33,6 +36,7 @@ private:
     cv::VideoCapture m_cap;
     FFmpegMppEncoder m_ffmpeg;
     SafeQueue<cv::Mat> m_frame;
+    pid_t m_mediamtx_pid;
 };
 
 #endif
