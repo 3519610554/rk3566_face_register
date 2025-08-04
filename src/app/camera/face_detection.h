@@ -25,7 +25,15 @@ protected:
     //录入人脸任务
     void enroll_face_task(cv::Mat &frame, cv::Mat &gray, std::vector<cv::Rect> faces);
     //人脸检测任务
-    void detection_face_task(cv::Mat &frame, cv::Mat &gray, std::vector<cv::Rect> faces);
+    void detection_face_task(cv::Mat &frame, cv::Mat &gray, std::vector<cv::Rect> faces, int frame_skipp_state);
+private:
+    struct FrameSkipp{
+        cv::Point text_org;
+        cv::Scalar color;
+        std::string label_text;
+        cv::Rect face_rect;
+        cv::Scalar scalar;
+    };
 private:
     //中文字体
     cv::Ptr<cv::freetype::FreeType2> m_ft2;
@@ -41,13 +49,14 @@ private:
     int m_frame_interval_cnt;
     //录入和检测任务
     int m_task_state;
-    
+
     //录入人脸总数
     int m_user_num;
     //录入人名
     std::string m_user_name;
     //检测上一次有效标签的个数
     std::vector<int> m_last_detection_label;
+    std::vector<FrameSkipp> m_frame_skipp;
 };
 
 #endif

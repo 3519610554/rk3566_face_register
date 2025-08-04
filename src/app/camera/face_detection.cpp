@@ -46,7 +46,7 @@ void FaceDetection::initialize(std::string yaml_path){
 
 int FaceDetection::detection_faces(cv::Mat image, std::vector<cv::Rect> &objects){
 
-    if (++m_frame_interval_cnt < 5)
+    if (++m_frame_interval_cnt < 8)
         return 1;
     m_frame_interval_cnt = 0;
     objects.clear();
@@ -67,9 +67,9 @@ void FaceDetection::dispose_thread(){
         cv::Mat gray;
         cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
         // cv::cvtColor(frame, gray, cv::COLOR_RGBA2RGB);
-        int frame_skipping = detection_faces(frame, m_faces);
+        int frame_skipp_state = detection_faces(frame, m_faces);
         if (m_task_state == 0){
-            detection_face_task(frame, gray, m_faces);
+            detection_face_task(frame, gray, m_faces, frame_skipp_state);
         }else if (m_task_state == 1){
             enroll_face_task(frame, gray, m_faces);
         }
@@ -104,33 +104,71 @@ void FaceDetection::enroll_face_task(cv::Mat &frame, cv::Mat &gray, std::vector<
     m_enroll_face_labels.clear();
 }
 
-void FaceDetection::detection_face_task(cv::Mat &frame, cv::Mat &gray, std::vector<cv::Rect> faces){
+void FaceDetection::detection_face_task(cv::Mat &frame, cv::Mat &gray, std::vector<cv::Rect> faces, int frame_skipp_state){
     size_t faces_size = faces.size();
     if (faces_size == 0)
         return;
 
+    if (frame_skipp_state){
+        size_t frame_skipp_size = m_frame_skipp.size();
+        for (size_t i; i < frame_skipp_size; i ++){
+            m_ft2->putText(
+            frame, 
+            m_frame_skipp[i].label_text, 
+            m_frame_skipp[i].text_org, 
+            30, 
+            m_frame_skipp[i].color, 
+            -1, 
+            cv::LINE_AA, 
+            false
+        );
+        cv::rectangle(frame, m_frame_skipp[i].face_rect, m_frame_skipp[i].scalar, 2);
+        }
+        return;
+    }
+
     std::vector<int> detection_label;
     std::string label_text = "";
+    FrameSkipp frame_skipp_tmp;
+    m_frame_skipp.clear();
+    
     for (size_t i = 0; i < faces_size; i ++){
         int predicted_label = -1;
         double confidence = 0.0;
         cv::Rect face_rect = faces[i];
         cv::Mat face = gray(face_rect);
         cv::Scalar scalar;
+        cv::Scalar color;
+        cv::Point text_org;
         
         bool state = TrainModel::Instance()->train_model_get(face, predicted_label, confidence);
         if (state && (predicted_label != -1) && (confidence < CONFIDENCE_THRESHOLD)){
             detection_label.push_back(predicted_label);
             scalar = cv::Scalar(0, 255, 0);
             label_text = UserSQLite::Instance()->get_name_by_id(predicted_label);
-            cv::Point text_org(face_rect.x, face_rect.y - 35);
-            cv::Scalar color(255, 0, 0);
-            m_ft2->putText(frame, label_text, text_org, 30, color, -1, cv::LINE_AA, false);
+            color = cv::Scalar(255, 0, 0);
+            text_org = cv::Point(face_rect.x, face_rect.y - 35);
+            m_ft2->putText(
+                frame, 
+                label_text, 
+                text_org, 
+                30, 
+                color, 
+                -1, 
+                cv::LINE_AA, 
+                false
+            ); 
         }else {
             //黄色
             scalar = cv::Scalar(0, 255, 255);  
         }
         cv::rectangle(frame, face_rect, scalar, 2);
+        frame_skipp_tmp.text_org = text_org;
+        frame_skipp_tmp.color = color;
+        frame_skipp_tmp.label_text = label_text;
+        frame_skipp_tmp.face_rect = face_rect;
+        frame_skipp_tmp.scalar = scalar;
+        m_frame_skipp.push_back(frame_skipp_tmp);
     }
     if (detection_label.size() == 0)
         return;
